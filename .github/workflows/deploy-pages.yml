@@ -28,10 +28,13 @@ jobs:
         working-directory: outfield-iq
       - run: npm run build
         working-directory: outfield-iq
+      - run: |
+          mkdir -p pages-root/outfield-iq
+          cp -r outfield-iq/dist/. pages-root/outfield-iq/
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: outfield-iq/dist
+          path: pages-root
 
   deploy:
     needs: build
