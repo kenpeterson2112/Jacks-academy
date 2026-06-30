@@ -1,0 +1,57 @@
+.card {
+  max-width: 480px;
+  margin: 1rem auto 0;
+  padding: 1.25rem;
+  border-radius: 14px;
+  border: 3px solid;
+  text-align: center;
+  background: #fff;
+}
+
+.out {
+  border-color: #2e7d32;
+  background: #e8f5e9;
+}
+
+.safeCorrectRead {
+  border-color: #1565c0;
+  background: #e3f2fd;
+}
+
+.wrongDecision {
+  border-color: #c62828;
+  background: #ffebee;
+}
+
+.timeout {
+  border-color: #ef6c00;
+  background: #fff3e0;
+}
+
+.headline {
+  margin: 0 0 0.5rem;
+  font-size: 1.4rem;
+}
+
+.explanation {
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.4;
+  color: #333;
+}
+
+.nextButton {
+  margin-top: 1rem;
+  padding: 0.7rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 700;
+  border-radius: 10px;
+  border: none;
+  background: #1b1b1b;
+  color: #fff;
+  cursor: pointer;
+}
+
+.nextButton:hover {
+  background: #333;
+}

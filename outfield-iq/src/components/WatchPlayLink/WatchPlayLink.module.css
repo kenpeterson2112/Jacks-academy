@@ -1,0 +1,11 @@
+.link {
+  display: inline-block;
+  margin-top: 0.75rem;
+  color: #1565c0;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.link:hover {
+  text-decoration: underline;
+}

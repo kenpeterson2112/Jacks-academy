@@ -1,0 +1,57 @@
+.container {
+  max-width: 560px;
+  margin: 0 auto;
+  padding: 1.5rem 1rem;
+  text-align: center;
+}
+
+.title {
+  font-size: 2.2rem;
+  margin: 0 0 0.25rem;
+}
+
+.tagline {
+  margin: 0 0 1.5rem;
+  color: #555;
+  font-size: 1.1rem;
+}
+
+.instructions {
+  text-align: left;
+  background: #f5f5f5;
+  border-radius: 12px;
+  padding: 1rem 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.instructions ul {
+  margin: 0.5rem 0;
+}
+
+.lastResult {
+  background: #e3f2fd;
+  border-radius: 12px;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.lastResultHeading {
+  margin: 0 0 0.25rem;
+  font-weight: 700;
+}
+
+.startButton {
+  padding: 0.9rem 2.2rem;
+  font-size: 1.2rem;
+  font-weight: 700;
+  border-radius: 12px;
+  border: none;
+  background: #2e7d32;
+  color: #fff;
+  cursor: pointer;
+  min-height: 44px;
+}
+
+.startButton:hover {
+  background: #256428;
+}

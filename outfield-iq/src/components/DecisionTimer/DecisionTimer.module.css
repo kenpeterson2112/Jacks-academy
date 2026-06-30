@@ -1,0 +1,20 @@
+.track {
+  width: 100%;
+  max-width: 480px;
+  margin: 0 auto 0.75rem;
+  height: 14px;
+  background: #e0e0e0;
+  border-radius: 999px;
+  overflow: hidden;
+  border: 1px solid #bdbdbd;
+}
+
+.fill {
+  height: 100%;
+  background: #2e7d32;
+  transition: width 0.05s linear, background-color 0.2s ease;
+}
+
+.fill.urgent {
+  background: #c62828;
+}

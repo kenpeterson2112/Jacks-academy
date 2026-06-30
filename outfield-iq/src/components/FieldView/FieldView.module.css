@@ -1,0 +1,129 @@
+.container {
+  position: relative;
+  width: 100%;
+  max-width: 480px;
+  margin: 0 auto;
+  aspect-ratio: 1 / 1;
+}
+
+.diamond {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  border-radius: 12px;
+  background: #6ab150;
+}
+
+.outfieldGrass {
+  fill: #5a9e44;
+}
+
+.infieldDirt {
+  fill: #c79a63;
+  stroke: #fff;
+  stroke-width: 0.6;
+}
+
+.mound {
+  fill: #c79a63;
+  stroke: #fff;
+  stroke-width: 0.4;
+}
+
+.base {
+  fill: #ffffff;
+  stroke: #444;
+  stroke-width: 0.4;
+}
+
+.homePlate {
+  fill: #ffffff;
+  stroke: #444;
+  stroke-width: 0.4;
+}
+
+.runner {
+  fill: #1e88e5;
+  stroke: #fff;
+  stroke-width: 0.6;
+}
+
+.fielder {
+  fill: #fdd835;
+  stroke: #5d4037;
+  stroke-width: 0.6;
+}
+
+.fielderLabel {
+  font-size: 4.5px;
+  font-weight: 700;
+  fill: #ffffff;
+  text-anchor: middle;
+  paint-order: stroke;
+  stroke: #2e2e2e;
+  stroke-width: 0.6px;
+}
+
+.targets {
+  position: absolute;
+  inset: 0;
+}
+
+.target {
+  position: absolute;
+  left: calc(var(--x) * 1%);
+  top: calc(var(--y) * 1%);
+  transform: translate(-50%, -50%);
+  min-width: 64px;
+  min-height: 44px;
+  padding: 0.4rem 0.6rem;
+  border-radius: 10px;
+  border: 2px solid #1b1b1b;
+  background: #ffffffee;
+  color: #1b1b1b;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.25);
+  touch-action: manipulation;
+}
+
+.target:hover:not(:disabled) {
+  background: #fff3a0;
+}
+
+.target:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+@media (max-width: 480px) {
+  .container {
+    aspect-ratio: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .diamond {
+    position: static;
+    aspect-ratio: 1 / 1;
+    width: 100%;
+  }
+
+  .targets {
+    position: static;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.5rem;
+  }
+
+  .target {
+    position: static;
+    transform: none;
+    flex: 1 1 30%;
+  }
+}
