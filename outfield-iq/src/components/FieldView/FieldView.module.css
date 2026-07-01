@@ -48,6 +48,15 @@
   fill: #1e88e5;
   stroke: #fff;
   stroke-width: 0.6;
+  transition: opacity 0.4s ease;
+}
+
+.ball {
+  fill: #ffffff;
+  stroke: #333;
+  stroke-width: 0.6;
+  transition: cx 0.55s ease-out, cy 0.55s ease-out;
+  pointer-events: none;
 }
 
 .fielder {

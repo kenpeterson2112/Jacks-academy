@@ -1,9 +1,11 @@
 import { useEffect, useRef, useState } from "react";
-import type { DecisionOutcome, DecisionRecord, Scenario, ThrowTarget } from "../../types/game";
+import type { BaseOccupied, DecisionOutcome, DecisionRecord, Scenario, ThrowTarget } from "../../types/game";
 import { FieldView } from "../FieldView/FieldView";
 import { DecisionTimer, DEFAULT_TIME_LIMIT_MS } from "../DecisionTimer/DecisionTimer";
 import { DecisionFeedback } from "../DecisionFeedback/DecisionFeedback";
 import { resolveOutcome } from "../../utils/scoring";
+import { computeRunnersAfterHit } from "../../utils/baserunning";
+import { FIELDER_COORDS, TARGET_COORDS } from "../FieldView/positions";
 import styles from "./PlayingPhase.module.css";
 
 interface PlayingPhaseProps {
@@ -34,10 +36,17 @@ function describeRunners(scenario: Scenario): string {
   return `Runner${bases.length > 1 ? "s" : ""} on ${bases.map((b) => BASE_LABELS[b]).join(" and ")}`;
 }
 
-type DecisionPhase = "deciding" | "feedback";
+type DecisionPhase = "ball-incoming" | "deciding" | "feedback";
 
 /** Extra window after the timer bar empties where a tap still counts (just late) before it's a true no-tap timeout. */
 const GRACE_PERIOD_MS = 4000;
+/** Duration of the ball-flight-in cinematic before the timer starts. */
+const BALL_INCOMING_MS = 800;
+/** Duration of the throw animation before finalizing the decision. */
+const THROW_ANIM_MS = 300;
+
+/** Home plate coords — ball starts here (the batter just hit it). */
+const HOME_COORD = { x: 50, y: 88 };
 
 export function PlayingPhase({
   scenario,
@@ -46,29 +55,50 @@ export function PlayingPhase({
   onSubmitDecision,
   onNext,
 }: PlayingPhaseProps) {
-  const [decisionPhase, setDecisionPhase] = useState<DecisionPhase>("deciding");
+  const [decisionPhase, setDecisionPhase] = useState<DecisionPhase>("ball-incoming");
   const [outcome, setOutcome] = useState<DecisionOutcome | null>(null);
   const [isOvertime, setIsOvertime] = useState(false);
-  const startTimeRef = useRef(Date.now());
+  const [ballCoord, setBallCoord] = useState<{ x: number; y: number }>(HOME_COORD);
+  const [displayRunners, setDisplayRunners] = useState<Partial<Record<BaseOccupied, boolean>> | null>(null);
+
+  const startTimeRef = useRef<number>(0);
   const decidedRef = useRef(false);
   const graceTimeoutRef = useRef<number | undefined>(undefined);
+  const incomingTimerRef = useRef<number | undefined>(undefined);
+  const throwTimerRef = useRef<number | undefined>(undefined);
 
   const timeLimitMs = scenario.timeLimitMs ?? DEFAULT_TIME_LIMIT_MS;
 
+  // Ball-incoming cinematic: fly ball from plate to fielder, runners advance.
   useEffect(() => {
+    setBallCoord(HOME_COORD);
+    setDecisionPhase("ball-incoming");
+    setDisplayRunners(null);
+    decidedRef.current = false;
+
+    // One rAF so the initial position renders before the transition target is set.
+    const rafId = requestAnimationFrame(() => {
+      setBallCoord(FIELDER_COORDS[scenario.fielderPosition]);
+      setDisplayRunners(computeRunnersAfterHit(scenario));
+    });
+
+    incomingTimerRef.current = window.setTimeout(() => {
+      startTimeRef.current = Date.now();
+      setDecisionPhase("deciding");
+    }, BALL_INCOMING_MS);
+
     return () => {
-      if (graceTimeoutRef.current !== undefined) {
-        window.clearTimeout(graceTimeoutRef.current);
-      }
+      cancelAnimationFrame(rafId);
+      window.clearTimeout(incomingTimerRef.current);
+      window.clearTimeout(graceTimeoutRef.current);
+      window.clearTimeout(throwTimerRef.current);
     };
-  }, []);
+  }, [scenario.id]); // intentionally excludes scenario fields — only re-runs when scenario identity changes
 
   function finalizeDecision(chosen: ThrowTarget | null) {
     if (decidedRef.current) return;
     decidedRef.current = true;
-    if (graceTimeoutRef.current !== undefined) {
-      window.clearTimeout(graceTimeoutRef.current);
-    }
+    if (graceTimeoutRef.current !== undefined) window.clearTimeout(graceTimeoutRef.current);
 
     const reactionTimeMs = Date.now() - startTimeRef.current;
     const resolved = resolveOutcome(scenario.correctDecision, chosen, reactionTimeMs, timeLimitMs);
@@ -88,7 +118,10 @@ export function PlayingPhase({
   }
 
   function handleThrow(target: ThrowTarget) {
-    finalizeDecision(target);
+    if (decidedRef.current || decisionPhase !== "deciding") return;
+    // Briefly animate the ball toward the chosen target before locking in.
+    setBallCoord(TARGET_COORDS[target]);
+    throwTimerRef.current = window.setTimeout(() => finalizeDecision(target), THROW_ANIM_MS);
   }
 
   function handleTimeLimitReached() {
@@ -98,6 +131,8 @@ export function PlayingPhase({
       finalizeDecision(null);
     }, GRACE_PERIOD_MS);
   }
+
+  const fieldDisabled = decisionPhase !== "deciding";
 
   return (
     <div className={styles.container}>
@@ -117,7 +152,13 @@ export function PlayingPhase({
         <p className={styles.overtime}>Time's up — throw now or it's a no-call!</p>
       )}
 
-      <FieldView scenario={scenario} onThrow={handleThrow} disabled={decisionPhase === "feedback"} />
+      <FieldView
+        scenario={scenario}
+        onThrow={handleThrow}
+        disabled={fieldDisabled}
+        ballCoord={ballCoord}
+        displayRunners={displayRunners}
+      />
 
       {decisionPhase === "feedback" && outcome && (
         <DecisionFeedback

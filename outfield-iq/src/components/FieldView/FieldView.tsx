@@ -1,21 +1,35 @@
 import type { CSSProperties } from "react";
-import type { Scenario, ThrowTarget } from "../../types/game";
+import type { BaseOccupied, Scenario, ThrowTarget } from "../../types/game";
 import { FIELDER_COORDS, PITCHER_MOUND_COORD, TARGET_COORDS, THROW_TARGETS } from "./positions";
 import styles from "./FieldView.module.css";
+
+interface Coord {
+  x: number;
+  y: number;
+}
 
 interface FieldViewProps {
   scenario: Scenario;
   onThrow: (target: ThrowTarget) => void;
   disabled?: boolean;
+  ballCoord?: Coord | null;
+  /** Override which bases appear occupied (for post-hit runner positions). */
+  displayRunners?: Partial<Record<BaseOccupied, boolean>> | null;
 }
 
 function coordVars(x: number, y: number): CSSProperties {
   return { "--x": x, "--y": y } as CSSProperties;
 }
 
-export function FieldView({ scenario, onThrow, disabled = false }: FieldViewProps) {
+export function FieldView({
+  scenario,
+  onThrow,
+  disabled = false,
+  ballCoord,
+  displayRunners,
+}: FieldViewProps) {
   const fielderCoord = FIELDER_COORDS[scenario.fielderPosition];
-  const occupiedBases = (["1B", "2B", "3B"] as const).filter((base) => scenario.runners[base]);
+  const runners = displayRunners ?? scenario.runners;
 
   return (
     <div className={styles.container}>
@@ -46,17 +60,28 @@ export function FieldView({ scenario, onThrow, disabled = false }: FieldViewProp
           className={styles.homePlate}
         />
 
-        {occupiedBases.map((base) => (
+        {/* Always render all three runner slots; opacity drives show/hide with CSS transition */}
+        {(["1B", "2B", "3B"] as const).map((base) => (
           <circle
             key={`runner-${base}`}
             cx={TARGET_COORDS[base].x}
             cy={TARGET_COORDS[base].y - 6}
             r="2.6"
             className={styles.runner}
+            style={{ opacity: runners[base] ? 1 : 0 }}
           >
             <title>Runner on {base}</title>
           </circle>
         ))}
+
+        {ballCoord != null && (
+          <circle
+            cx={ballCoord.x}
+            cy={ballCoord.y}
+            r="2"
+            className={styles.ball}
+          />
+        )}
 
         <circle cx={fielderCoord.x} cy={fielderCoord.y} r="3" className={styles.fielder}>
           <title>{scenario.fielderPosition} fielder</title>
