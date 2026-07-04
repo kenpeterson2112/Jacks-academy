@@ -35,7 +35,7 @@ function describeRunners(scenario: Scenario): string {
   return `Runner${bases.length > 1 ? "s" : ""} on ${bases.map((b) => BASE_LABELS[b]).join(" and ")}`;
 }
 
-type DecisionPhase = "ball-incoming" | "deciding" | "feedback";
+type DecisionPhase = "pre-pitch" | "ball-incoming" | "deciding" | "feedback";
 
 /** Extra window after the timer bar empties where a tap still counts (just late) before it's a true no-tap timeout. */
 const GRACE_PERIOD_MS = 4000;
@@ -54,10 +54,10 @@ export function PlayingPhase({
   onSubmitDecision,
   onNext,
 }: PlayingPhaseProps) {
-  const [decisionPhase, setDecisionPhase] = useState<DecisionPhase>("ball-incoming");
+  const [decisionPhase, setDecisionPhase] = useState<DecisionPhase>("pre-pitch");
   const [outcome, setOutcome] = useState<DecisionOutcome | null>(null);
   const [isOvertime, setIsOvertime] = useState(false);
-  const [ballCoord, setBallCoord] = useState<{ x: number; y: number }>(HOME_COORD);
+  const [ballCoord, setBallCoord] = useState<{ x: number; y: number } | null>(null);
 
   const startTimeRef = useRef<number>(0);
   const decidedRef = useRef(false);
@@ -67,29 +67,33 @@ export function PlayingPhase({
 
   const timeLimitMs = scenario.timeLimitMs ?? DEFAULT_TIME_LIMIT_MS;
 
-  // Ball-incoming cinematic: fly ball from plate to fielder, runners advance.
+  // Reset to pre-pitch state whenever the scenario changes.
   useEffect(() => {
-    setBallCoord(HOME_COORD);
-    setDecisionPhase("ball-incoming");
+    setBallCoord(null);
+    setDecisionPhase("pre-pitch");
+    setOutcome(null);
+    setIsOvertime(false);
     decidedRef.current = false;
-
-    // One rAF so the initial position renders before the transition target is set.
-    const rafId = requestAnimationFrame(() => {
-      setBallCoord(FIELDER_COORDS[scenario.fielderPosition]);
-    });
-
-    incomingTimerRef.current = window.setTimeout(() => {
-      startTimeRef.current = Date.now();
-      setDecisionPhase("deciding");
-    }, BALL_INCOMING_MS);
-
     return () => {
-      cancelAnimationFrame(rafId);
       window.clearTimeout(incomingTimerRef.current);
       window.clearTimeout(graceTimeoutRef.current);
       window.clearTimeout(throwTimerRef.current);
     };
   }, [scenario.id]); // intentionally excludes scenario fields — only re-runs when scenario identity changes
+
+  function handlePitch() {
+    if (decisionPhase !== "pre-pitch") return;
+    setDecisionPhase("ball-incoming");
+    setBallCoord(HOME_COORD);
+    // One rAF so the initial position renders before the transition target is set.
+    requestAnimationFrame(() => {
+      setBallCoord(FIELDER_COORDS[scenario.fielderPosition]);
+    });
+    incomingTimerRef.current = window.setTimeout(() => {
+      startTimeRef.current = Date.now();
+      setDecisionPhase("deciding");
+    }, BALL_INCOMING_MS);
+  }
 
   function finalizeDecision(chosen: ThrowTarget | null) {
     if (decidedRef.current) return;
@@ -139,7 +143,9 @@ export function PlayingPhase({
         You're playing <strong>{scenario.fielderPosition}</strong> · {scenario.outs}{" "}
         {scenario.outs === 1 ? "out" : "outs"} · {describeRunners(scenario)}
       </p>
-      <p className={styles.hitType}>{HIT_TYPE_LABELS[scenario.hitType]} hit your way! Where do you throw?</p>
+      {decisionPhase !== "pre-pitch" && (
+        <p className={styles.hitType}>{HIT_TYPE_LABELS[scenario.hitType]} hit your way! Where do you throw?</p>
+      )}
 
       {decisionPhase === "deciding" && (
         <DecisionTimer scenarioKey={scenario.id} timeLimitMs={timeLimitMs} onExpire={handleTimeLimitReached} />
@@ -154,6 +160,12 @@ export function PlayingPhase({
         disabled={fieldDisabled}
         ballCoord={ballCoord}
       />
+
+      {decisionPhase === "pre-pitch" && (
+        <button type="button" className={styles.pitchBtn} onClick={handlePitch}>
+          Pitch!
+        </button>
+      )}
 
       {decisionPhase === "feedback" && outcome && (
         <DecisionFeedback

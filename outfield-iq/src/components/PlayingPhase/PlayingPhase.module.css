@@ -25,6 +25,24 @@
   font-weight: 700;
 }
 
+.pitchBtn {
+  margin-top: 0.75rem;
+  padding: 0.75rem 2.5rem;
+  font-size: 1.2rem;
+  font-weight: 800;
+  border: none;
+  border-radius: 12px;
+  background: #2e7d32;
+  color: #fff;
+  cursor: pointer;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.25);
+  touch-action: manipulation;
+}
+
+.pitchBtn:hover {
+  background: #1b5e20;
+}
+
 .overtime {
   margin: -0.25rem 0 0.75rem;
   text-align: center;
