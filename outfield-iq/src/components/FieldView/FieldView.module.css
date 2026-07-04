@@ -65,6 +65,22 @@
   stroke-width: 0.6;
 }
 
+.cutoff {
+  fill: #fb8c00;
+  stroke: #4e2600;
+  stroke-width: 0.6;
+}
+
+.cutoffLabel {
+  font-size: 4.5px;
+  font-weight: 700;
+  fill: #ffffff;
+  text-anchor: middle;
+  paint-order: stroke;
+  stroke: #2e2e2e;
+  stroke-width: 0.6px;
+}
+
 .baseHitTarget {
   cursor: pointer;
 }

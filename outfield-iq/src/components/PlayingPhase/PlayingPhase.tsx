@@ -4,7 +4,7 @@ import { FieldView } from "../FieldView/FieldView";
 import { DecisionTimer, DEFAULT_TIME_LIMIT_MS } from "../DecisionTimer/DecisionTimer";
 import { DecisionFeedback } from "../DecisionFeedback/DecisionFeedback";
 import { resolveOutcome } from "../../utils/scoring";
-import { FIELDER_COORDS, TARGET_COORDS } from "../FieldView/positions";
+import { FIELDER_COORDS, GAPPER_COORDS, TARGET_COORDS } from "../FieldView/positions";
 import styles from "./PlayingPhase.module.css";
 
 interface PlayingPhaseProps {
@@ -85,9 +85,12 @@ export function PlayingPhase({
     if (decisionPhase !== "pre-pitch") return;
     setDecisionPhase("ball-incoming");
     setBallCoord(HOME_COORD);
+    const ballDest = scenario.hitType === "gapper"
+      ? GAPPER_COORDS[scenario.fielderPosition]
+      : FIELDER_COORDS[scenario.fielderPosition];
     // One rAF so the initial position renders before the transition target is set.
     requestAnimationFrame(() => {
-      setBallCoord(FIELDER_COORDS[scenario.fielderPosition]);
+      setBallCoord(ballDest);
     });
     incomingTimerRef.current = window.setTimeout(() => {
       startTimeRef.current = Date.now();

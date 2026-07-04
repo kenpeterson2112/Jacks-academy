@@ -20,6 +20,27 @@ export const FIELDER_COORDS: Record<FieldingPosition, Coord> = {
   RF: { x: 80, y: 16 },
 };
 
+/** Where the fielder ends up and the ball lands for a gapper — deeper in the gap. */
+export const GAPPER_COORDS: Record<FieldingPosition, Coord> = {
+  LF: { x: 30, y: 8 },
+  CF: { x: 50, y: 5 },
+  RF: { x: 70, y: 8 },
+};
+
+/** Where the relay infielder stands for a gapper, keyed by which outfielder is throwing. */
+export const CUTOFF_COORDS: Record<FieldingPosition, Coord> = {
+  LF: { x: 35, y: 46 },
+  CF: { x: 50, y: 42 },
+  RF: { x: 65, y: 46 },
+};
+
+/** Which infield position acts as relay man for each outfield spot. */
+export const CUTOFF_LABEL: Record<FieldingPosition, string> = {
+  LF: "SS",
+  CF: "SS",
+  RF: "2B",
+};
+
 export const PITCHER_MOUND_COORD: Coord = { x: 50, y: 64 };
 
 export const THROW_TARGETS: { id: ThrowTarget; label: string }[] = [

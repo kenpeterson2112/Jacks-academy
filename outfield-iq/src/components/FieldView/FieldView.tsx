@@ -1,6 +1,6 @@
 import type { CSSProperties } from "react";
 import type { Scenario, ThrowTarget } from "../../types/game";
-import { FIELDER_COORDS, PITCHER_MOUND_COORD, TARGET_COORDS, THROW_TARGETS } from "./positions";
+import { CUTOFF_COORDS, CUTOFF_LABEL, FIELDER_COORDS, GAPPER_COORDS, PITCHER_MOUND_COORD, TARGET_COORDS, THROW_TARGETS } from "./positions";
 import styles from "./FieldView.module.css";
 
 interface Coord {
@@ -25,7 +25,12 @@ export function FieldView({
   disabled = false,
   ballCoord,
 }: FieldViewProps) {
-  const fielderCoord = FIELDER_COORDS[scenario.fielderPosition];
+  const isGapper = scenario.hitType === "gapper";
+  const fielderCoord = isGapper
+    ? GAPPER_COORDS[scenario.fielderPosition]
+    : FIELDER_COORDS[scenario.fielderPosition];
+  const cutoffCoord = isGapper ? CUTOFF_COORDS[scenario.fielderPosition] : null;
+  const cutoffLabel = CUTOFF_LABEL[scenario.fielderPosition];
   const runners = scenario.runners;
 
   return (
@@ -86,6 +91,25 @@ export function FieldView({
         <text x={fielderCoord.x} y={fielderCoord.y - 6} className={styles.fielderLabel}>
           {scenario.fielderPosition}
         </text>
+
+        {cutoffCoord && (
+          <>
+            <circle cx={cutoffCoord.x} cy={cutoffCoord.y} r="3" className={styles.cutoff}>
+              <title>Cutoff man ({cutoffLabel})</title>
+            </circle>
+            <text x={cutoffCoord.x} y={cutoffCoord.y - 4.5} className={styles.cutoffLabel}>
+              {cutoffLabel}
+            </text>
+            <circle
+              cx={cutoffCoord.x}
+              cy={cutoffCoord.y}
+              r="9"
+              fill="transparent"
+              className={disabled ? undefined : styles.baseHitTarget}
+              onClick={disabled ? undefined : () => onThrow("Cutoff")}
+            />
+          </>
+        )}
 
         {/* Transparent larger hit targets over bases so the player can tap the diamond directly */}
         {(["1B", "2B", "3B"] as const).map((base) => (
