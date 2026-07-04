@@ -1,10 +1,9 @@
 import { useEffect, useRef, useState } from "react";
-import type { BaseOccupied, DecisionOutcome, DecisionRecord, Scenario, ThrowTarget } from "../../types/game";
+import type { DecisionOutcome, DecisionRecord, Scenario, ThrowTarget } from "../../types/game";
 import { FieldView } from "../FieldView/FieldView";
 import { DecisionTimer, DEFAULT_TIME_LIMIT_MS } from "../DecisionTimer/DecisionTimer";
 import { DecisionFeedback } from "../DecisionFeedback/DecisionFeedback";
 import { resolveOutcome } from "../../utils/scoring";
-import { computeRunnersAfterHit } from "../../utils/baserunning";
 import { FIELDER_COORDS, TARGET_COORDS } from "../FieldView/positions";
 import styles from "./PlayingPhase.module.css";
 
@@ -59,7 +58,6 @@ export function PlayingPhase({
   const [outcome, setOutcome] = useState<DecisionOutcome | null>(null);
   const [isOvertime, setIsOvertime] = useState(false);
   const [ballCoord, setBallCoord] = useState<{ x: number; y: number }>(HOME_COORD);
-  const [displayRunners, setDisplayRunners] = useState<Partial<Record<BaseOccupied, boolean>> | null>(null);
 
   const startTimeRef = useRef<number>(0);
   const decidedRef = useRef(false);
@@ -73,13 +71,11 @@ export function PlayingPhase({
   useEffect(() => {
     setBallCoord(HOME_COORD);
     setDecisionPhase("ball-incoming");
-    setDisplayRunners(null);
     decidedRef.current = false;
 
     // One rAF so the initial position renders before the transition target is set.
     const rafId = requestAnimationFrame(() => {
       setBallCoord(FIELDER_COORDS[scenario.fielderPosition]);
-      setDisplayRunners(computeRunnersAfterHit(scenario));
     });
 
     incomingTimerRef.current = window.setTimeout(() => {
@@ -157,7 +153,6 @@ export function PlayingPhase({
         onThrow={handleThrow}
         disabled={fieldDisabled}
         ballCoord={ballCoord}
-        displayRunners={displayRunners}
       />
 
       {decisionPhase === "feedback" && outcome && (

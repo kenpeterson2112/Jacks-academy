@@ -1,5 +1,5 @@
 import type { CSSProperties } from "react";
-import type { BaseOccupied, Scenario, ThrowTarget } from "../../types/game";
+import type { Scenario, ThrowTarget } from "../../types/game";
 import { FIELDER_COORDS, PITCHER_MOUND_COORD, TARGET_COORDS, THROW_TARGETS } from "./positions";
 import styles from "./FieldView.module.css";
 
@@ -13,8 +13,6 @@ interface FieldViewProps {
   onThrow: (target: ThrowTarget) => void;
   disabled?: boolean;
   ballCoord?: Coord | null;
-  /** Override which bases appear occupied (for post-hit runner positions). */
-  displayRunners?: Partial<Record<BaseOccupied, boolean>> | null;
 }
 
 function coordVars(x: number, y: number): CSSProperties {
@@ -26,10 +24,9 @@ export function FieldView({
   onThrow,
   disabled = false,
   ballCoord,
-  displayRunners,
 }: FieldViewProps) {
   const fielderCoord = FIELDER_COORDS[scenario.fielderPosition];
-  const runners = displayRunners ?? scenario.runners;
+  const runners = scenario.runners;
 
   return (
     <div className={styles.container}>
@@ -89,6 +86,27 @@ export function FieldView({
         <text x={fielderCoord.x} y={fielderCoord.y - 6} className={styles.fielderLabel}>
           {scenario.fielderPosition}
         </text>
+
+        {/* Transparent larger hit targets over bases so the player can tap the diamond directly */}
+        {(["1B", "2B", "3B"] as const).map((base) => (
+          <circle
+            key={`ht-${base}`}
+            cx={TARGET_COORDS[base].x}
+            cy={TARGET_COORDS[base].y}
+            r="9"
+            fill="transparent"
+            className={disabled ? undefined : styles.baseHitTarget}
+            onClick={disabled ? undefined : () => onThrow(base)}
+          />
+        ))}
+        <circle
+          cx={TARGET_COORDS.Home.x}
+          cy={TARGET_COORDS.Home.y}
+          r="9"
+          fill="transparent"
+          className={disabled ? undefined : styles.baseHitTarget}
+          onClick={disabled ? undefined : () => onThrow("Home")}
+        />
       </svg>
 
       <div className={styles.targets}>
