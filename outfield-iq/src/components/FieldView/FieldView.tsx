@@ -1,6 +1,5 @@
-import type { CSSProperties } from "react";
 import type { Scenario, ThrowTarget } from "../../types/game";
-import { CUTOFF_COORDS, CUTOFF_LABEL, FIELDER_COORDS, GAPPER_COORDS, PITCHER_MOUND_COORD, TARGET_COORDS, THROW_TARGETS } from "./positions";
+import { CUTOFF_COORDS, CUTOFF_LABEL, FIELDER_COORDS, GAPPER_COORDS, PITCHER_MOUND_COORD, TARGET_COORDS } from "./positions";
 import styles from "./FieldView.module.css";
 
 interface Coord {
@@ -13,10 +12,6 @@ interface FieldViewProps {
   onThrow: (target: ThrowTarget) => void;
   disabled?: boolean;
   ballCoord?: Coord | null;
-}
-
-function coordVars(x: number, y: number): CSSProperties {
-  return { "--x": x, "--y": y } as CSSProperties;
 }
 
 export function FieldView({
@@ -111,7 +106,7 @@ export function FieldView({
           </>
         )}
 
-        {/* Transparent larger hit targets over bases so the player can tap the diamond directly */}
+        {/* Tappable hit targets over each base and home plate */}
         {(["1B", "2B", "3B"] as const).map((base) => (
           <circle
             key={`ht-${base}`}
@@ -132,25 +127,6 @@ export function FieldView({
           onClick={disabled ? undefined : () => onThrow("Home")}
         />
       </svg>
-
-      <div className={styles.targets}>
-        {THROW_TARGETS.map((target) => {
-          const coord = TARGET_COORDS[target.id];
-          return (
-            <button
-              key={target.id}
-              type="button"
-              className={styles.target}
-              style={coordVars(coord.x, coord.y)}
-              onClick={() => onThrow(target.id)}
-              disabled={disabled}
-              aria-label={`Throw to ${target.label}`}
-            >
-              {target.label}
-            </button>
-          );
-        })}
-      </div>
     </div>
   );
 }
