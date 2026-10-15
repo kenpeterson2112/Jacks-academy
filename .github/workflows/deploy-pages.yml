@@ -1,4 +1,4 @@
-name: Deploy Outfield IQ to GitHub Pages
+name: Deploy to GitHub Pages
 
 on:
   push:
@@ -23,14 +23,14 @@ jobs:
         with:
           node-version: 20
           cache: npm
-          cache-dependency-path: outfield-iq/package-lock.json
+          cache-dependency-path: archive/outfield-iq/package-lock.json
       - run: npm ci
-        working-directory: outfield-iq
+        working-directory: archive/outfield-iq
       - run: npm run build
-        working-directory: outfield-iq
+        working-directory: archive/outfield-iq
       - run: |
           mkdir -p pages-root/outfield-iq
-          cp -r outfield-iq/dist/. pages-root/outfield-iq/
+          cp -r archive/outfield-iq/dist/. pages-root/outfield-iq/
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
