@@ -1,0 +1,671 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#2f2620">
+<title>Jacks Home Practice</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Graduate&family=Nunito:wght@400;600;800;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    /* palette from the drill animation: warm paper, ink, rust, field green, infield peach */
+    --navy:#2f2620; --navy-2:#5a4636; --red:#c4592a; --gold:#e2b496; --cream:#f7f0e5;
+    --ink:#2f2620; --muted:#7d6c5d; --line:#e5d8c5; --ok:#4f7f5b; --ok-bg:#e4efe4; --card:#fffaf2;
+    --display:"Graduate", Rockwell, Georgia, serif;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--cream);color:var(--ink);font-family:Nunito,system-ui,sans-serif;font-size:17px;-webkit-tap-highlight-color:transparent}
+  button,input,textarea,select{font:inherit}
+  h1,h2,h3{margin:0 0 .4em;line-height:1.15}
+  h1,h2,.login h1{font-family:var(--display);font-weight:400;letter-spacing:.01em}
+  header.top h1{font-family:var(--display);font-weight:400}
+  .wrap{max-width:640px;margin:0 auto;padding:0 16px 48px}
+  .wide{max-width:1000px}
+  header.top{background:var(--navy);color:#fff;padding:14px 16px;position:sticky;top:0;z-index:5;box-shadow:0 2px 10px rgba(0,0,0,.15)}
+  header.top .row{max-width:1000px;margin:0 auto;display:flex;align-items:center;gap:12px}
+  header.top h1{font-size:1.15rem;margin:0;flex:1}
+  .muted{color:var(--muted)}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;margin:14px 0;box-shadow:0 1px 3px rgba(20,40,75,.05)}
+  label{display:block;font-weight:800;margin:10px 0 4px;font-size:.92rem}
+  input[type=text],input[type=password],input[type=url],input[type=number],input:not([type]),textarea,select{
+    width:100%;padding:12px 14px;border:2px solid var(--line);border-radius:12px;background:#fff;color:var(--ink);margin-top:4px}
+  input:focus,textarea:focus{outline:none;border-color:var(--navy-2)}
+  textarea{min-height:90px;resize:vertical}
+  .pin{font-size:1.8rem;letter-spacing:.6em;text-align:center}
+  .btn{background:var(--red);color:#fff;border:0;border-radius:12px;padding:12px 18px;font-weight:800;cursor:pointer}
+  .btn:disabled{opacity:.55}
+  .btn.big{width:100%;padding:16px;font-size:1.1rem;margin-top:14px}
+  .btn.navy{background:var(--navy)}
+  .btn.ghost{background:transparent;color:var(--navy);border:2px solid var(--line)}
+  .btn.small{padding:7px 12px;font-size:.88rem;border-radius:10px}
+  .link{background:none;border:0;color:var(--navy-2);font-weight:800;text-decoration:underline;cursor:pointer;padding:8px}
+  header .link{color:#fff;opacity:.85}
+  .err{background:#f9e1d6;color:#8e3d1a;border-radius:10px;padding:10px 12px;margin-top:10px;font-weight:600}
+  .login{max-width:420px;margin:0 auto;padding:48px 16px;text-align:center}
+  .login form{text-align:left}
+  .logo{font-size:3.4rem}
+  .tickets{display:flex;align-items:center;gap:14px;background:var(--gold);border-radius:18px;padding:16px 18px;margin:16px 0;color:var(--ink)}
+  .tickets .n{font-size:2.4rem;font-weight:900;line-height:1}
+  .tickets small{display:block;font-weight:700}
+  .act{display:flex;gap:14px;align-items:center;cursor:pointer;width:100%;text-align:left;font:inherit;color:inherit}
+  .act .ring{flex:0 0 56px;height:56px;border-radius:50%;display:grid;place-items:center;font-weight:900;font-size:.9rem}
+  .act .t{font-weight:900;font-size:1.05rem}
+  .done-tag{display:inline-block;background:var(--ok-bg);color:var(--ok);font-weight:800;border-radius:999px;padding:2px 10px;font-size:.8rem;margin-top:4px}
+  .step{border-left:5px solid var(--line)}
+  .step.ok{border-left-color:var(--ok)}
+  .step h3{display:flex;align-items:center;gap:10px;font-size:1.05rem}
+  .num{width:28px;height:28px;border-radius:50%;background:var(--navy);color:#fff;display:grid;place-items:center;font-size:.85rem;flex:0 0 28px}
+  .step.ok .num{background:var(--ok)}
+  .check{display:flex;align-items:center;gap:12px;padding:14px;border:2px solid var(--line);border-radius:12px;cursor:pointer;font-weight:800;margin-top:10px;background:#fff}
+  .check input{width:26px;height:26px;accent-color:var(--ok)}
+  .check.on{border-color:var(--ok);background:var(--ok-bg)}
+  .video{position:relative;padding-top:56.25%;border-radius:12px;overflow:hidden;background:#000;margin-top:8px}
+  .video iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+  ol.drill{padding-left:1.3em;margin:8px 0}
+  ol.drill li{margin:6px 0}
+  .opt{display:block;width:100%;text-align:left;padding:12px 14px;border:2px solid var(--line);border-radius:12px;background:#fff;margin:6px 0;cursor:pointer;font-weight:600}
+  .opt.sel{border-color:var(--navy-2);background:#f1e6d8}
+  .opt.right{border-color:var(--ok);background:var(--ok-bg)}
+  .opt.wrong{border-color:var(--red);background:#f9e1d6}
+  .q{margin:14px 0}
+  .q p{font-weight:800;margin:0 0 4px}
+  .banner{background:var(--ok);color:#fff;border-radius:16px;padding:16px;font-weight:900;text-align:center;font-size:1.1rem}
+  .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--navy);color:#fff;padding:14px 20px;border-radius:999px;font-weight:900;box-shadow:0 6px 24px rgba(0,0,0,.25);z-index:20;animation:pop .35s ease}
+  @keyframes pop{from{transform:translate(-50%,30px);opacity:0}to{transform:translate(-50%,0);opacity:1}}
+  .qa{border-top:1px solid var(--line);padding:10px 0}
+  .qa .reply{background:#f1e6d8;border-radius:10px;padding:8px 10px;margin-top:6px}
+  .tabs{display:flex;gap:6px;overflow-x:auto;padding:12px 0 4px;position:sticky;top:56px;background:var(--cream);z-index:4}
+  .tab{border:2px solid var(--line);background:#fff;border-radius:999px;padding:8px 14px;font-weight:800;cursor:pointer;white-space:nowrap}
+  .tab.on{background:var(--navy);color:#fff;border-color:var(--navy)}
+  .badge{background:var(--red);color:#fff;border-radius:999px;padding:0 7px;font-size:.75rem;margin-left:4px}
+  .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .grow{flex:1;min-width:0}
+  .plist .p{border-top:1px solid var(--line);padding:12px 0}
+  .plist .head{display:flex;align-items:center;gap:10px}
+  .plist .tools{display:flex;flex-direction:column;gap:12px;margin-top:12px;padding:12px;background:var(--cream);border-radius:12px}
+  .plist .tools .row{gap:10px}
+  .plist .tools .lbl{font-weight:800;font-size:.9rem;min-width:110px}
+  .plist .danger{color:var(--red);border-color:#efc9b5}
+  .pill{background:var(--gold);color:var(--ink);border-radius:999px;padding:2px 10px;font-weight:900;font-size:.85rem}
+  .grid{overflow-x:auto}
+  table{border-collapse:collapse;width:100%;font-size:.88rem}
+  th,td{border-bottom:1px solid var(--line);padding:8px;text-align:center;white-space:nowrap}
+  th:first-child,td:first-child{text-align:left;position:sticky;left:0;background:#fff;font-weight:800}
+  td.c-done{background:var(--ok-bg);color:var(--ok);font-weight:900}
+  .qedit{border:2px dashed var(--line);border-radius:12px;padding:10px;margin:10px 0}
+  .optrow{display:flex;gap:8px;align-items:center;margin-top:6px}
+  .optrow input[type=radio]{width:22px;height:22px;accent-color:var(--ok)}
+  .roller{font-family:var(--display);font-size:2rem;font-weight:400;text-align:center;padding:26px 10px;background:var(--navy);color:var(--gold);border-radius:16px;margin:12px 0}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="https://unpkg.com/react@18.3.1/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone@7.25.6/babel.min.js"></script>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+/* ====== Settings ====== */
+const SUPABASE_URL = "https://ieivgzhdgjizwabdlixs.supabase.co";
+const SUPABASE_KEY = "sb_publishable_heTKat-H4MX-1uTABW3R4A_hBqyQ7e5";
+
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY, { auth: { persistSession: false } });
+const { useState, useEffect, useRef } = React;
+
+const store = {
+  get(k){ try { return JSON.parse(localStorage.getItem(k)); } catch { return null; } },
+  set(k,v){ try { localStorage.setItem(k, JSON.stringify(v)); } catch {} },
+  del(k){ try { localStorage.removeItem(k); } catch {} },
+};
+
+const FRIENDLY = {
+  BAD_LOGIN: "That name and PIN don't match. Try again!",
+  LOCKED: "Too many tries. Wait 10 minutes or ask Coach to reset your PIN.",
+  PIN_MUST_BE_4_DIGITS: "PIN must be exactly 4 digits.",
+  NO_ENTRIES_YET: "Nobody has any raffle entries yet.",
+  PASSPHRASE_TOO_SHORT: "Use at least 8 characters.",
+  TITLE_REQUIRED: "Give the activity a title.",
+  NOT_LOGGED_IN: "Please log in again.",
+  NOT_COACH: "Please log in again.",
+};
+
+async function rpc(fn, args){
+  const { data, error } = await sb.rpc(fn, args);
+  if (error) {
+    const msg = error.message || "";
+    const code = Object.keys(FRIENDLY).find(c => msg.includes(c));
+    let text = code ? FRIENDLY[code] : "Something went wrong. Check your connection and try again.";
+    if (msg.includes("players_name_key_uniq")) text = "There is already a player with that name.";
+    const e = new Error(text); e.code = code; throw e;
+  }
+  return data;
+}
+
+function ytId(url){
+  if (!url) return null;
+  const m = url.match(/(?:youtu\.be\/|[?&]v=|shorts\/|embed\/)([\w-]{11})/);
+  return m ? m[1] : null;
+}
+
+function stepsFor(a){
+  const s = [];
+  if (a.video_url) s.push(["watched", "Watch the video"]);
+  if (a.quiz && a.quiz.length) s.push(["quiz_done", "Pass the quiz"]);
+  s.push(["drill_done", "Do the drill"]);
+  if (a.video_requested) s.push(["video_sent", "Send your video"]);
+  return s;
+}
+
+/* ====== App ====== */
+function App(){
+  const [session, setSession] = useState(() => store.get("jhp_session"));
+  const login = s => { store.set("jhp_session", s); setSession(s); };
+  const logout = async () => {
+    if (session) { try { await rpc("logout", { p_token: session.token }); } catch {} }
+    store.del("jhp_session"); setSession(null);
+  };
+  if (!session) return <Login onLogin={login} />;
+  if (session.role === "coach") return <Coach session={session} onLogout={logout} />;
+  return <Player session={session} onLogout={logout} />;
+}
+
+function Shell({ title, onLogout, children, wide }){
+  return (
+    <>
+      <header className="top"><div className="row">
+        <span style={{fontSize:"1.4rem"}}>⚾</span><h1>{title}</h1>
+        <button className="link" onClick={onLogout}>Log out</button>
+      </div></header>
+      <div className={"wrap" + (wide ? " wide" : "")}>{children}</div>
+    </>
+  );
+}
+
+/* ====== Login ====== */
+function Login({ onLogin }){
+  const [mode, setMode] = useState("player");
+  const [name, setName] = useState(""); const [pin, setPin] = useState(""); const [pass, setPass] = useState("");
+  const [err, setErr] = useState(""); const [busy, setBusy] = useState(false);
+
+  async function submit(e){
+    e.preventDefault(); setErr(""); setBusy(true);
+    try {
+      if (mode === "player") {
+        const r = await rpc("player_login", { p_name: name, p_pin: pin });
+        if (!r.ok) throw new Error(FRIENDLY[r.error] || FRIENDLY.BAD_LOGIN);
+        onLogin({ role: "player", token: r.token, name: r.name });
+      } else {
+        const r = await rpc("coach_login", { p_pass: pass });
+        if (!r.ok) throw new Error("That passphrase isn't right.");
+        onLogin({ role: "coach", token: r.token, name: "Coach" });
+      }
+    } catch (ex) { setErr(ex.message); setPin(""); }
+    finally { setBusy(false); }
+  }
+
+  return (
+    <div className="login">
+      <div className="logo">⚾</div>
+      <h1>Jacks Home Practice</h1>
+      <p className="muted">Practice at home. Earn raffle entries.</p>
+      <form className="card" onSubmit={submit}>
+        {mode === "player" ? <>
+          <label>Your name<input value={name} onChange={e => setName(e.target.value)} autoCapitalize="words" autoComplete="username" required /></label>
+          <label>Your 4-digit PIN<input className="pin" type="password" inputMode="numeric" autoComplete="current-password"
+            value={pin} onChange={e => setPin(e.target.value.replace(/\D/g, "").slice(0, 4))} required pattern="[0-9]{4}" /></label>
+        </> : <label>Coach passphrase<input type="password" value={pass} onChange={e => setPass(e.target.value)} required /></label>}
+        {err && <div className="err">{err}</div>}
+        <button className="btn big" disabled={busy}>{busy ? "Checking..." : "Let's go!"}</button>
+      </form>
+      <button className="link" onClick={() => { setMode(mode === "player" ? "coach" : "player"); setErr(""); }}>
+        {mode === "player" ? "Coach login" : "Player login"}
+      </button>
+    </div>
+  );
+}
+
+/* ====== Player ====== */
+function Player({ session, onLogout }){
+  const [home, setHomeRaw] = useState(null);
+  const [openId, setOpenId] = useState(null);
+  const [err, setErr] = useState("");
+  const [toast, setToast] = useState("");
+  const prevEntries = useRef(null);
+
+  function setHome(h){
+    if (prevEntries.current !== null && h.entries > prevEntries.current) {
+      const gained = h.entries - prevEntries.current;
+      setToast(`🎟️ +${gained} raffle ${gained === 1 ? "entry" : "entries"}!`);
+      setTimeout(() => setToast(""), 3200);
+    }
+    prevEntries.current = h.entries;
+    setHomeRaw(h);
+  }
+  async function guard(p){
+    try { const d = await p; setErr(""); return d; }
+    catch (e) { if (e.code === "NOT_LOGGED_IN") onLogout(); else setErr(e.message); throw e; }
+  }
+  useEffect(() => { guard(rpc("player_home", { p_token: session.token })).then(setHome).catch(() => {}); }, []);
+
+  const api = {
+    setStep: (id, step, val) => guard(rpc("player_set_step", { p_token: session.token, p_activity: id, p_step: step, p_value: val })).then(setHome).catch(() => {}),
+    quiz: async (id, answers) => { const r = await guard(rpc("player_submit_quiz", { p_token: session.token, p_activity: id, p_answers: answers })); setHome(r.home); return r; },
+    ask: (id, body) => guard(rpc("player_ask", { p_token: session.token, p_activity: id, p_body: body })).then(setHome),
+  };
+
+  if (!home) return <Shell title="Loading..." onLogout={onLogout}>{err && <div className="err">{err}</div>}</Shell>;
+  const act = home.activities.find(a => a.id === openId);
+
+  return (
+    <Shell title={act ? act.title : `Hi ${home.name}!`} onLogout={onLogout}>
+      {err && <div className="err">{err}</div>}
+      {act
+        ? <ActivityView a={act} questions={home.questions.filter(q => q.activity_id === act.id)} api={api} onBack={() => setOpenId(null)} />
+        : <PlayerHome home={home} onOpen={id => { setOpenId(id); window.scrollTo(0, 0); }} />}
+      {toast && <div className="toast">{toast}</div>}
+    </Shell>
+  );
+}
+
+function PlayerHome({ home, onOpen }){
+  const answered = home.questions.filter(q => q.reply);
+  return (
+    <>
+      <div className="tickets">
+        <div style={{fontSize:"2.2rem"}}>🎟️</div>
+        <div><div className="n">{home.entries}</div><small>raffle {home.entries === 1 ? "entry" : "entries"}</small></div>
+        <div className="grow" style={{fontSize:".85rem",fontWeight:700,textAlign:"right"}}>Finish activities to earn more. Video activities earn 2!</div>
+      </div>
+      <h2 style={{marginTop:20}}>Your activities</h2>
+      {home.activities.length === 0 && <p className="muted">No activities yet. Check back soon!</p>}
+      {home.activities.map(a => {
+        const steps = stepsFor(a); const done = steps.filter(([k]) => a[k]).length;
+        const complete = !!a.completed_at; const pct = Math.round(done / steps.length * 100);
+        return (
+          <button key={a.id} className="card act" onClick={() => onOpen(a.id)}>
+            <div className="ring" style={{background:`conic-gradient(${complete ? "var(--ok)" : "var(--red)"} ${pct}%, #eee 0)`}}>
+              <div style={{background:"#fff",width:44,height:44,borderRadius:"50%",display:"grid",placeItems:"center"}}>{complete ? "✓" : `${done}/${steps.length}`}</div>
+            </div>
+            <div className="grow">
+              <div className="t">{a.title}</div>
+              <div className="muted" style={{fontSize:".9rem"}}>{a.summary}</div>
+              {complete && <span className="done-tag">Done! +{a.video_requested ? 2 : 1} 🎟️</span>}
+            </div>
+          </button>
+        );
+      })}
+      {answered.length > 0 && <>
+        <h2 style={{marginTop:24}}>Coach answered you</h2>
+        <div className="card">{answered.map(q => (
+          <div className="qa" key={q.id}><div>❓ {q.body}</div><div className="reply">🧢 {q.reply}</div></div>
+        ))}</div>
+      </>}
+    </>
+  );
+}
+
+function ActivityView({ a, questions, api, onBack }){
+  const id = ytId(a.video_url);
+  const complete = !!a.completed_at;
+  let n = 0;
+  return (
+    <>
+      <button className="link" onClick={onBack}>← All activities</button>
+      <p className="muted" style={{margin:"4px 0 0"}}>{a.summary}</p>
+      {complete && <div className="banner" style={{marginTop:14}}>🎉 All done! You earned {a.video_requested ? 2 : 1} raffle {a.video_requested ? "entries" : "entry"}.</div>}
+
+      {a.video_url && <div className={"card step" + (a.watched ? " ok" : "")}>
+        <h3><span className="num">{++n}</span>Watch the video</h3>
+        {id ? <div className="video"><iframe src={`https://www.youtube-nocookie.com/embed/${id}`} allowFullScreen title={a.title}></iframe></div>
+            : <a className="btn navy" href={a.video_url} target="_blank" rel="noopener">Open the video</a>}
+        <Check on={a.watched} disabled={complete} label="I watched it" onChange={v => api.setStep(a.id, "watched", v)} />
+      </div>}
+
+      {a.quiz.length > 0 && <div className={"card step" + (a.quiz_done ? " ok" : "")}>
+        <h3><span className="num">{++n}</span>Quick quiz</h3>
+        {a.quiz_done ? <p style={{fontWeight:800,color:"var(--ok)"}}>✓ You got them all right!</p> : <Quiz a={a} api={api} />}
+      </div>}
+
+      <div className={"card step" + (a.drill_done ? " ok" : "")}>
+        <h3><span className="num">{++n}</span>Do the drill</h3>
+        <ol className="drill">{a.drill_steps.split("\n").filter(s => s.trim()).map((s, i) => <li key={i}>{s}</li>)}</ol>
+        <Check on={a.drill_done} disabled={complete} label="I did the drill!" onChange={v => api.setStep(a.id, "drill_done", v)} />
+      </div>
+
+      {a.video_requested && <div className={"card step" + (a.video_sent ? " ok" : "")}>
+        <h3><span className="num">{++n}</span>Send your video 📹</h3>
+        <p>{a.video_note || "Send Coach a short video of you doing the drill on WhatsApp."}</p>
+        <Check on={a.video_sent} disabled={complete} label="I sent my video" onChange={v => api.setStep(a.id, "video_sent", v)} />
+      </div>}
+
+      <AskCoach a={a} questions={questions} api={api} />
+    </>
+  );
+}
+
+function Check({ on, label, onChange, disabled }){
+  const [busy, setBusy] = useState(false);
+  return (
+    <label className={"check" + (on ? " on" : "")} style={{opacity: busy ? .6 : 1}}>
+      <input type="checkbox" checked={on} disabled={disabled || busy}
+        onChange={async e => { setBusy(true); try { await onChange(e.target.checked); } finally { setBusy(false); } }} />
+      {label}
+    </label>
+  );
+}
+
+function Quiz({ a, api }){
+  const [ans, setAns] = useState(a.quiz.map(() => null));
+  const [res, setRes] = useState(null); const [busy, setBusy] = useState(false);
+  const ready = ans.every(x => x !== null);
+  async function submit(){
+    setBusy(true);
+    try { const r = await api.quiz(a.id, ans); setRes(r); } catch {} finally { setBusy(false); }
+  }
+  return (
+    <>
+      {a.quiz.map((q, qi) => (
+        <div className="q" key={qi}>
+          <p>{qi + 1}. {q.q}</p>
+          {q.options.map((o, oi) => {
+            let cls = "opt";
+            if (ans[qi] === oi) cls += res ? (res.results[qi] ? " right" : " wrong") : " sel";
+            return <button key={oi} className={cls} onClick={() => { if (!res) { const c = [...ans]; c[qi] = oi; setAns(c); } }}>{o}</button>;
+          })}
+        </div>
+      ))}
+      {!res && <button className="btn big" disabled={!ready || busy} onClick={submit}>{busy ? "Checking..." : "Check my answers"}</button>}
+      {res && res.score < res.total && <>
+        <div className="err">You got {res.score} of {res.total}. Fix the red ones and try again!</div>
+        <button className="btn big navy" onClick={() => { setAns(ans.map((x, i) => res.results[i] ? x : null)); setRes(null); }}>Try again</button>
+      </>}
+    </>
+  );
+}
+
+function AskCoach({ a, questions, api }){
+  const [body, setBody] = useState(""); const [busy, setBusy] = useState(false); const [sent, setSent] = useState(false);
+  async function send(){
+    if (!body.trim()) return; setBusy(true);
+    try { await api.ask(a.id, body); setBody(""); setSent(true); setTimeout(() => setSent(false), 3000); } catch {} finally { setBusy(false); }
+  }
+  return (
+    <div className="card">
+      <h3>🧢 Ask Coach a question</h3>
+      <textarea value={body} onChange={e => setBody(e.target.value.slice(0, 500))} placeholder="What are you wondering about this drill?" />
+      <button className="btn" style={{marginTop:8}} disabled={busy || !body.trim()} onClick={send}>{busy ? "Sending..." : "Send"}</button>
+      {sent && <span style={{marginLeft:10,fontWeight:800,color:"var(--ok)"}}>Sent!</span>}
+      {questions.map(q => (
+        <div className="qa" key={q.id}>
+          <div>❓ {q.body}</div>
+          {q.reply ? <div className="reply">🧢 {q.reply}</div> : <div className="muted" style={{fontSize:".85rem"}}>Waiting for Coach...</div>}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/* ====== Coach ====== */
+function Coach({ session, onLogout }){
+  const t = session.token;
+  const [d, setD] = useState(null); const [tab, setTab] = useState("players");
+  const [err, setErr] = useState(""); const [busy, setBusy] = useState(false);
+
+  async function run(p){
+    setBusy(true);
+    try { const r = await p; setErr(""); return r; }
+    catch (e) { if (e.code === "NOT_COACH") onLogout(); else setErr(e.message); throw e; }
+    finally { setBusy(false); }
+  }
+  const call = (fn, args = {}) => run(rpc(fn, { p_token: t, ...args })).then(r => { setD(r); return r; });
+  useEffect(() => { call("coach_dashboard").catch(() => {}); }, []);
+
+  if (!d) return <Shell title="Coach" onLogout={onLogout}>{err ? <div className="err">{err}</div> : <p>Loading...</p>}</Shell>;
+  const open = d.questions.filter(q => !q.reply).length;
+  const tabs = [["players","Players"],["progress","Progress"],["activities","Activities"],["questions","Questions"],["raffle","Raffle"],["settings","Settings"]];
+
+  return (
+    <Shell title="Coach dashboard" onLogout={onLogout} wide>
+      <div className="tabs">{tabs.map(([k, l]) => (
+        <button key={k} className={"tab" + (tab === k ? " on" : "")} onClick={() => setTab(k)}>
+          {l}{k === "questions" && open > 0 && <span className="badge">{open}</span>}
+        </button>))}
+      </div>
+      {err && <div className="err">{err}</div>}
+      {tab === "players" && <PlayersTab d={d} call={call} busy={busy} />}
+      {tab === "progress" && <ProgressTab d={d} />}
+      {tab === "activities" && <ActivitiesTab d={d} call={call} busy={busy} />}
+      {tab === "questions" && <QuestionsTab d={d} call={call} />}
+      {tab === "raffle" && <RaffleTab d={d} setD={setD} run={run} t={t} call={call} busy={busy} />}
+      {tab === "settings" && <SettingsTab run={run} t={t} />}
+    </Shell>
+  );
+}
+
+function PlayerRow({ p, call, open, onToggle }){
+  const [pin, setPin] = useState(""); const [sure, setSure] = useState(false);
+  return (
+    <div className="p">
+      <div className="head">
+        <div className="grow"><b>{p.name}</b> {p.locked && <span className="badge">locked out</span>}</div>
+        <span className="pill" title="Raffle entries">🎟️ {p.entries}</span>
+        <button className="btn ghost small" onClick={() => { onToggle(); setSure(false); setPin(""); }} aria-expanded={open}>{open ? "Done" : "Manage"}</button>
+      </div>
+      {open && <div className="tools">
+        <div className="row">
+          <span className="lbl">Bonus entries</span>
+          <button className="btn ghost small" onClick={() => call("coach_set_bonus", { p_player: p.id, p_bonus: p.bonus - 1 })} disabled={p.bonus <= 0} aria-label="Remove a bonus entry">−</button>
+          <b style={{minWidth:20,textAlign:"center"}}>{p.bonus}</b>
+          <button className="btn ghost small" onClick={() => call("coach_set_bonus", { p_player: p.id, p_bonus: p.bonus + 1 })} aria-label="Add a bonus entry">+</button>
+        </div>
+        <div className="row">
+          <span className="lbl">New PIN</span>
+          <input value={pin} inputMode="numeric" style={{width:100,marginTop:0}} placeholder="4 digits"
+            onChange={e => setPin(e.target.value.replace(/\D/g, "").slice(0, 4))} />
+          <button className="btn ghost small" disabled={pin.length !== 4}
+            onClick={() => call("coach_reset_pin", { p_player: p.id, p_pin: pin }).then(() => setPin("")).catch(() => {})}>Save PIN</button>
+        </div>
+        <div className="row">
+          {!sure
+            ? <button className="btn ghost small danger" onClick={() => setSure(true)}>Remove player</button>
+            : <><span style={{fontWeight:700}}>Remove {p.name} and all their progress?</span>
+                <button className="btn small" onClick={() => call("coach_delete_player", { p_player: p.id })}>Yes, remove</button>
+                <button className="btn ghost small" onClick={() => setSure(false)}>Cancel</button></>}
+        </div>
+      </div>}
+    </div>
+  );
+}
+
+function PlayersTab({ d, call, busy }){
+  const [name, setName] = useState(""); const [pin, setPin] = useState(""); const [openId, setOpenId] = useState(null);
+  const add = e => { e.preventDefault(); call("coach_add_player", { p_name: name, p_pin: pin }).then(() => { setName(""); setPin(""); }).catch(() => {}); };
+  return (
+    <>
+      <form className="card" onSubmit={add}>
+        <h3>Add a player</h3>
+        <div className="row">
+          <div className="grow" style={{minWidth:160}}><label>Name (what they type to log in)<input value={name} onChange={e => setName(e.target.value)} required placeholder="e.g. Liam S" /></label></div>
+          <div style={{width:130}}><label>4-digit PIN<input value={pin} inputMode="numeric" onChange={e => setPin(e.target.value.replace(/\D/g, "").slice(0, 4))} required pattern="[0-9]{4}" /></label></div>
+        </div>
+        <button className="btn" style={{marginTop:12}} disabled={busy}>Add player</button>
+      </form>
+      <div className="card plist">
+        <h3>Team ({d.players.length})</h3>
+        {d.players.length === 0 && <p className="muted">No players yet. Add your first one above.</p>}
+        {d.players.map(p => <PlayerRow key={p.id} p={p} call={call} open={openId === p.id} onToggle={() => setOpenId(openId === p.id ? null : p.id)} />)}
+      </div>
+    </>
+  );
+}
+
+function ProgressTab({ d }){
+  const acts = d.activities.filter(a => a.published);
+  const pr = {}; d.progress.forEach(r => { pr[r.player_id + ":" + r.activity_id] = r; });
+  return (
+    <div className="card grid">
+      <h3>Who has done what</h3>
+      <p className="muted" style={{fontSize:".85rem"}}>✓ = complete · 📹 = says they sent a video (check WhatsApp)</p>
+      <table>
+        <thead><tr><th>Player</th>{acts.map(a => <th key={a.id} title={a.title}>{a.title.length > 16 ? a.title.slice(0, 15) + "…" : a.title}</th>)}<th>🎟️</th></tr></thead>
+        <tbody>{d.players.map(p => (
+          <tr key={p.id}><td>{p.name}</td>
+            {acts.map(a => {
+              const r = pr[p.id + ":" + a.id]; const steps = stepsFor(a);
+              if (!r) return <td key={a.id} className="muted">·</td>;
+              const n = steps.filter(([k]) => r[k]).length;
+              return <td key={a.id} className={r.completed_at ? "c-done" : ""}>{r.completed_at ? "✓" : `${n}/${steps.length}`}{r.video_sent ? " 📹" : ""}</td>;
+            })}
+            <td><b>{p.entries}</b></td></tr>
+        ))}</tbody>
+      </table>
+    </div>
+  );
+}
+
+const blankActivity = () => ({ title: "", summary: "", video_url: "", drill_steps: "", quiz: [], video_requested: false, video_note: "", sort_order: 0, published: true });
+
+function ActivitiesTab({ d, call, busy }){
+  const [edit, setEdit] = useState(null);
+  if (edit) return <ActivityEditor initial={edit} busy={busy} onCancel={() => setEdit(null)}
+    onSave={a => call("coach_save_activity", { p: a }).then(() => setEdit(null)).catch(() => {})}
+    onDelete={a => { if (confirm(`Delete "${a.title}"? Players lose progress on it.`)) call("coach_delete_activity", { p_activity: a.id }).then(() => setEdit(null)); }} />;
+  return (
+    <>
+      <button className="btn" style={{marginTop:14}} onClick={() => setEdit({ ...blankActivity(), sort_order: d.activities.length + 1 })}>+ New activity</button>
+      {d.activities.map(a => (
+        <div className="card row" key={a.id}>
+          <div className="grow"><b>{a.title}</b> {!a.published && <span className="badge">hidden</span>}
+            <div className="muted" style={{fontSize:".88rem"}}>{a.quiz.length} quiz Qs · {a.video_url ? "has video" : "no video yet"} · {a.video_requested ? "asks for a video (2 🎟️)" : "1 🎟️"}</div></div>
+          <button className="btn ghost small" onClick={() => setEdit({ ...a, video_url: a.video_url || "" })}>Edit</button>
+        </div>
+      ))}
+    </>
+  );
+}
+
+function ActivityEditor({ initial, onSave, onCancel, onDelete, busy }){
+  const [a, setA] = useState(JSON.parse(JSON.stringify(initial)));
+  const set = (k, v) => setA({ ...a, [k]: v });
+  const setQ = (i, q) => { const qs = [...a.quiz]; qs[i] = q; set("quiz", qs); };
+  return (
+    <div className="card">
+      <h3>{a.id ? "Edit activity" : "New activity"}</h3>
+      <label>Title<input value={a.title} onChange={e => set("title", e.target.value)} /></label>
+      <label>Short description<input value={a.summary} onChange={e => set("summary", e.target.value)} /></label>
+      <label>YouTube link (optional)<input type="url" value={a.video_url} onChange={e => set("video_url", e.target.value)} placeholder="https://youtube.com/..." /></label>
+      <label>Drill steps (one per line)<textarea value={a.drill_steps} onChange={e => set("drill_steps", e.target.value)} /></label>
+      <label className="check" style={{fontWeight:800}}><input type="checkbox" checked={a.video_requested} onChange={e => set("video_requested", e.target.checked)} />Ask players to send a video (worth 2 entries)</label>
+      {a.video_requested && <label>Video instructions<input value={a.video_note} onChange={e => set("video_note", e.target.value)} placeholder="Send Coach a short clip on WhatsApp." /></label>}
+
+      <h3 style={{marginTop:18}}>Quiz</h3>
+      {a.quiz.map((q, i) => (
+        <div className="qedit" key={i}>
+          <div className="row"><b className="grow">Question {i + 1}</b><button className="btn ghost small" onClick={() => set("quiz", a.quiz.filter((_, j) => j !== i))}>Remove</button></div>
+          <input value={q.q} onChange={e => setQ(i, { ...q, q: e.target.value })} placeholder="Question" />
+          {q.options.map((o, oi) => (
+            <div className="optrow" key={oi}>
+              <input type="radio" name={"ans" + i} checked={q.answer === oi} onChange={() => setQ(i, { ...q, answer: oi })} title="Correct answer" />
+              <input value={o} onChange={e => { const os = [...q.options]; os[oi] = e.target.value; setQ(i, { ...q, options: os }); }} placeholder={`Answer ${oi + 1}`} />
+              {q.options.length > 2 && <button className="btn ghost small" onClick={() => { const os = q.options.filter((_, j) => j !== oi); setQ(i, { ...q, options: os, answer: Math.min(q.answer, os.length - 1) }); }}>×</button>}
+            </div>
+          ))}
+          <p className="muted" style={{fontSize:".8rem",margin:"6px 0 0"}}>Tap the circle beside the right answer.</p>
+          {q.options.length < 4 && <button className="link" onClick={() => setQ(i, { ...q, options: [...q.options, ""] })}>+ add answer</button>}
+        </div>
+      ))}
+      <button className="btn ghost small" onClick={() => set("quiz", [...a.quiz, { q: "", options: ["", "", ""], answer: 0 }])}>+ Add question</button>
+
+      <div className="row" style={{marginTop:14}}>
+        <label className="check" style={{margin:0}}><input type="checkbox" checked={a.published} onChange={e => set("published", e.target.checked)} />Visible to players</label>
+        <div style={{width:110}}><label>Order<input type="number" value={a.sort_order} onChange={e => set("sort_order", parseInt(e.target.value || "0", 10))} /></label></div>
+      </div>
+      <div className="row" style={{marginTop:16}}>
+        <button className="btn" disabled={busy} onClick={() => onSave(a)}>Save</button>
+        <button className="btn ghost" onClick={onCancel}>Cancel</button>
+        <div className="grow" />
+        {a.id && <button className="btn ghost" onClick={() => onDelete(a)}>Delete</button>}
+      </div>
+    </div>
+  );
+}
+
+function QuestionsTab({ d, call }){
+  const title = id => (d.activities.find(a => a.id === id) || {}).title || "General";
+  if (!d.questions.length) return <p className="muted" style={{marginTop:20}}>No questions yet.</p>;
+  return d.questions.map(q => <QuestionCard key={q.id} q={q} title={title(q.activity_id)} call={call} />);
+}
+function QuestionCard({ q, title, call }){
+  const [r, setR] = useState(q.reply || "");
+  return (
+    <div className="card">
+      <div className="muted" style={{fontSize:".85rem"}}>{q.player} · {title} · {new Date(q.created_at).toLocaleDateString()}</div>
+      <p style={{fontWeight:800,margin:"6px 0"}}>❓ {q.body}</p>
+      <textarea value={r} onChange={e => setR(e.target.value)} placeholder="Your reply" style={{minHeight:60}} />
+      <button className="btn small" style={{marginTop:6}} onClick={() => call("coach_reply", { p_question: q.id, p_reply: r })}>{q.reply ? "Update reply" : "Reply"}</button>
+    </div>
+  );
+}
+
+function RaffleTab({ d, setD, run, t, call, busy }){
+  const [prize, setPrize] = useState(""); const [rolling, setRolling] = useState(null); const [win, setWin] = useState(null);
+  const total = d.players.reduce((s, p) => s + p.entries, 0);
+  async function draw(prize){
+    if (!prize.trim()) return; setWin(null);
+    let r; try { r = await run(rpc("coach_draw", { p_token: t, p_prize: prize })); } catch { return; }
+    const names = d.players.filter(p => p.entries > 0).map(p => p.name); let i = 0;
+    const iv = setInterval(() => {
+      setRolling(names[Math.floor(Math.random() * names.length)]);
+      if (++i > 24) { clearInterval(iv); setRolling(null); setWin({ ...r, prize }); setD(r.dashboard); }
+    }, 85);
+  }
+  return (
+    <>
+      <div className="card">
+        <h3>Draw a winner</h3>
+        <p className="muted">{total} {total === 1 ? "entry" : "entries"} in this round. More entries = better odds.</p>
+        <div className="row" style={{marginTop:10}}>
+          <input className="grow" value={prize} onChange={e => setPrize(e.target.value)} placeholder="Prize" />
+          <button className="btn" disabled={busy || rolling || !total || !prize.trim()} onClick={() => draw(prize)}>Draw</button>
+        </div>
+        {rolling && <div className="roller">{rolling}</div>}
+        {win && <div className="roller">🎉 {win.winner}<div style={{fontSize:"1rem",color:"#fff"}}>wins: {win.prize} ({win.entries} of {win.total} entries)</div></div>}
+      </div>
+      <div className="card">
+        <h3>Past draws</h3>
+        {d.draws.length === 0 && <p className="muted">None yet.</p>}
+        {d.draws.map(x => <div className="qa" key={x.id}><b>{x.player_name}</b> won {x.prize} <span className="muted">· {new Date(x.drawn_at).toLocaleDateString()}</span></div>)}
+      </div>
+      <div className="card">
+        <h3>Start a new round</h3>
+        <p className="muted">Sets everyone's entries back to 0. Finished activities stay finished.</p>
+        <button className="btn ghost" onClick={() => { if (confirm("Start a new raffle round? Everyone's entries go back to 0.")) call("coach_new_round"); }}>Start new round</button>
+      </div>
+    </>
+  );
+}
+
+function SettingsTab({ run, t }){
+  const [p1, setP1] = useState(""); const [p2, setP2] = useState(""); const [msg, setMsg] = useState("");
+  async function save(e){
+    e.preventDefault(); setMsg("");
+    if (p1 !== p2) { setMsg("Those don't match."); return; }
+    try { await run(rpc("coach_change_pass", { p_token: t, p_new: p1 })); setMsg("Passphrase changed. Other coach logins were signed out."); setP1(""); setP2(""); } catch {}
+  }
+  return (
+    <form className="card" onSubmit={save}>
+      <h3>Change coach passphrase</h3>
+      <p className="muted">Share this with your other coaches. At least 8 characters.</p>
+      <label>New passphrase<input type="password" value={p1} onChange={e => setP1(e.target.value)} required /></label>
+      <label>Type it again<input type="password" value={p2} onChange={e => setP2(e.target.value)} required /></label>
+      <button className="btn" style={{marginTop:12}}>Save</button>
+      {msg && <p style={{fontWeight:800}}>{msg}</p>}
+    </form>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+</script>
+</body>
+</html>

@@ -1,9 +1,15 @@
-# Jack's Academy
+# Jacks Home Practice
 
-Starting fresh. The new build goes here at the top of the repo.
+At-home practice app for the Northumberland Jacks 11U baseball team. Players log in, work through drill activities, and earn raffle entries. Coaches manage players, activities, questions and the raffle.
+
+Live at https://kenpeterson2112.github.io/Jacks-academy/
+
+- `index.html`: the whole app (React from a CDN, no build step).
+- `supabase/schema.sql`: reference copy of the database setup.
+- `CLAUDE.md`: project notes for Claude.
 
 ## Archive
 
-The first version lives in [`archive/`](archive/). It is kept as is so parts of it can be reused in the rebuild.
+The first version of this repo lives in [`archive/`](archive/) so parts of it can be reused.
 
-- [Outfield IQ](archive/outfield-iq/): the baseball fielder decision game (React + Vite). It still deploys to GitHub Pages at the same address: `/Jacks-academy/outfield-iq/`.
+- [Outfield IQ](archive/outfield-iq/): the baseball fielder decision game. Still live at `/Jacks-academy/outfield-iq/`.
