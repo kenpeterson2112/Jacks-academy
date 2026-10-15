@@ -97,7 +97,6 @@
   .optrow{display:flex;gap:8px;align-items:center;margin-top:6px}
   .optrow input[type=radio]{width:22px;height:22px;accent-color:var(--ok)}
   .roller{font-family:var(--display);font-size:2rem;font-weight:400;text-align:center;padding:26px 10px;background:var(--navy);color:var(--gold);border-radius:16px;margin:12px 0}
-  .prizes{display:flex;gap:8px;flex-wrap:wrap}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script src="https://unpkg.com/react@18.3.1/umd/react.production.min.js"></script>
@@ -110,7 +109,6 @@
 /* ====== Settings ====== */
 const SUPABASE_URL = "https://ieivgzhdgjizwabdlixs.supabase.co";
 const SUPABASE_KEY = "sb_publishable_heTKat-H4MX-1uTABW3R4A_hBqyQ7e5";
-const PRIZES = ["Pack of gum", "Sunflower seeds", "Sports equipment gift card"];
 
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY, { auth: { persistSession: false } });
 const { useState, useEffect, useRef } = React;
@@ -611,7 +609,7 @@ function QuestionCard({ q, title, call }){
 }
 
 function RaffleTab({ d, setD, run, t, call, busy }){
-  const [custom, setCustom] = useState(""); const [rolling, setRolling] = useState(null); const [win, setWin] = useState(null);
+  const [prize, setPrize] = useState(""); const [rolling, setRolling] = useState(null); const [win, setWin] = useState(null);
   const total = d.players.reduce((s, p) => s + p.entries, 0);
   async function draw(prize){
     if (!prize.trim()) return; setWin(null);
@@ -627,12 +625,9 @@ function RaffleTab({ d, setD, run, t, call, busy }){
       <div className="card">
         <h3>Draw a winner</h3>
         <p className="muted">{total} {total === 1 ? "entry" : "entries"} in this round. More entries = better odds.</p>
-        <div className="prizes">
-          {PRIZES.map(p => <button key={p} className="btn" disabled={busy || rolling || !total} onClick={() => draw(p)}>{p}</button>)}
-        </div>
         <div className="row" style={{marginTop:10}}>
-          <input className="grow" value={custom} onChange={e => setCustom(e.target.value)} placeholder="Other prize" />
-          <button className="btn navy" disabled={busy || rolling || !total || !custom.trim()} onClick={() => draw(custom)}>Draw</button>
+          <input className="grow" value={prize} onChange={e => setPrize(e.target.value)} placeholder="Prize" />
+          <button className="btn" disabled={busy || rolling || !total || !prize.trim()} onClick={() => draw(prize)}>Draw</button>
         </div>
         {rolling && <div className="roller">{rolling}</div>}
         {win && <div className="roller">🎉 {win.winner}<div style={{fontSize:"1rem",color:"#fff"}}>wins: {win.prize} ({win.entries} of {win.total} entries)</div></div>}

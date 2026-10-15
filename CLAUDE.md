@@ -8,13 +8,14 @@ Started as a UBC MET ETEC 523 "DIY mobile project" exercise. It is a working pro
 
 - Ken is not a terminal user. Explain changes in plain language, and prefer GitHub web upload / web editor steps over git CLI instructions when he needs to do something himself.
 - No em dashes in any text written for Ken or shown in the app.
-- Hosting: GitHub Pages (push to main, auto-deploys). Do not move it to Netlify.
+- Hosting: GitHub Pages at https://kenpeterson2112.github.io/Jacks-academy/. A push to the default branch runs `.github/workflows/deploy-pages.yml`, which publishes the top-level `*.html` files and the archived Outfield IQ build. Do not move it to Netlify.
 
 ## Files
 
 - `index.html`: the whole app. One file: React 18 + Babel standalone from CDN (versions pinned), supabase-js v2. No build step. Keep it single-file unless Ken asks otherwise.
 - `ground-ball-drill.html`: standalone animated drill page (SVG + vanilla JS). Linked from activities, not embedded in the app.
 - `supabase/schema.sql`: the full database setup (tables + RPC functions + grants). Reference copy; it has already been applied.
+- `archive/outfield-iq/`: the first version of this repo (Outfield IQ, React + Vite). Kept as is and still deployed at `/Jacks-academy/outfield-iq/`. Copy pieces out of it rather than editing it.
 
 ## Backend (Supabase)
 
@@ -31,7 +32,7 @@ Started as a UBC MET ETEC 523 "DIY mobile project" exercise. It is a working pro
 - Kids send videos to the coach on WhatsApp. The app only stores a checkbox ("I sent my video"). Do not add video uploads without asking: it involves storing video of minors.
 - Completion is computed server-side in `_refresh_completion` and is permanent once earned (unchecking a box later does not remove it).
 - Raffle: 1 entry per completed activity, 2 if it requested a video, plus coach-given bonus entries. Only completions since the current round started count. `coach_new_round` resets the round and bonuses. Draws are weighted by entries.
-- Prizes: pack of gum, sunflower seeds, sports equipment gift card (plus a custom prize box).
+- Prizes: no preset list. The coach types the prize into the box on the Raffle tab for each draw.
 - Quiz answers are graded in the database; the client never receives the correct answers.
 
 ## Design
