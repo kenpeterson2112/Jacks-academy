@@ -8,7 +8,7 @@ Started as a UBC MET ETEC 523 "DIY mobile project" exercise. It is a working pro
 
 - Ken is not a terminal user. Explain changes in plain language, and prefer GitHub web upload / web editor steps over git CLI instructions when he needs to do something himself.
 - No em dashes in any text written for Ken or shown in the app.
-- Hosting: GitHub Pages at https://kenpeterson2112.github.io/Jacks-academy/. A push to the default branch runs `.github/workflows/deploy-pages.yml`, which publishes the top-level `*.html` files and the archived Outfield IQ build. Do not move it to Netlify.
+- Hosting: GitHub Pages at https://kenpeterson2112.github.io/Jacks-academy/. A push to `main` (the default branch) runs `.github/workflows/deploy-pages.yml`, which publishes the top-level `*.html` files and the archived Outfield IQ build. Do not move it to Netlify.
 
 ## Files
 
@@ -37,7 +37,7 @@ Started as a UBC MET ETEC 523 "DIY mobile project" exercise. It is a working pro
 
 ## Design
 
-Palette matches the drill animation: warm paper `#f7f0e5`, ink `#2f2620`, rust `#c4592a`, field green `#4f7f5b`, infield peach `#e2b496`. Headings in Graduate (Google Fonts), body in Nunito. Mobile-first: most players use a parent's phone.
+Branding follows the Northumberland Jacks x Be On Time Athletics winter development poster: near-black `#0f1a13` (header, dark buttons), Jacks green `#16703d` (main buttons, header stripe), BOT yellow `#f2cf1d` (raffle tickets, in-progress rings, draw winner), light green-grey page `#eef2ef` on white cards. Red `#c0392b` is only for wrong answers, alerts and remove buttons. Colours are CSS variables in `:root` at the top of `index.html`. Headings in Graduate (Google Fonts), body in Nunito. Mobile-first: most players use a parent's phone.
 
 ## Known limits / ideas
 
