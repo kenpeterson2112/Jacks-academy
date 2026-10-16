@@ -52,6 +52,12 @@
   .act{display:flex;gap:14px;align-items:center;cursor:pointer;width:100%;text-align:left;font:inherit;color:inherit}
   .act .ring{flex:0 0 56px;height:56px;border-radius:50%;display:grid;place-items:center;font-weight:900;font-size:.9rem}
   .act .t{font-weight:900;font-size:1.05rem}
+  .chip{display:inline-block;font-size:.72rem;font-weight:900;letter-spacing:.08em;text-transform:uppercase;padding:2px 9px;border-radius:999px;background:var(--soft);color:var(--muted);margin-bottom:4px}
+  .chip.hitting{background:#fdf2bf;color:#6b5600}
+  .chip.fielding{background:var(--ok-bg);color:var(--brand)}
+  .chip.pitching{background:var(--dark);color:#fff}
+  .media{display:block;width:100%;max-width:100%;height:auto;border-radius:12px;margin-top:8px;background:var(--soft)}
+  .media + .video{margin-top:12px}
   .done-tag{display:inline-block;background:var(--ok-bg);color:var(--ok);font-weight:800;border-radius:999px;padding:2px 10px;font-size:.8rem;margin-top:4px}
   .step{border-left:5px solid var(--line)}
   .step.ok{border-left-color:var(--ok)}
@@ -149,9 +155,14 @@ function ytId(url){
   return m ? m[1] : null;
 }
 
+function Chip({ name }){
+  if (!name) return null;
+  return <span className={"chip " + name.toLowerCase().replace(/[^a-z]/g, "")}>{name}</span>;
+}
+
 function stepsFor(a){
   const s = [];
-  if (a.video_url) s.push(["watched", "Watch the video"]);
+  if (a.video_url || a.image_url) s.push(["watched", "Watch"]);
   if (a.quiz && a.quiz.length) s.push(["quiz_done", "Pass the quiz"]);
   s.push(["drill_done", "Do the drill"]);
   if (a.video_requested) s.push(["video_sent", "Send your video"]);
@@ -289,6 +300,7 @@ function PlayerHome({ home, onOpen }){
               <div style={{background:"#fff",width:44,height:44,borderRadius:"50%",display:"grid",placeItems:"center"}}>{complete ? "✓" : `${done}/${steps.length}`}</div>
             </div>
             <div className="grow">
+              <Chip name={a.category} />
               <div className="t">{a.title}</div>
               <div className="muted" style={{fontSize:".9rem"}}>{a.summary}</div>
               {complete && <span className="done-tag">Done! +{a.video_requested ? 2 : 1} 🎟️</span>}
@@ -313,13 +325,15 @@ function ActivityView({ a, questions, api, onBack }){
   return (
     <>
       <button className="link" onClick={onBack}>← All activities</button>
+      <div style={{marginTop:4}}><Chip name={a.category} /></div>
       <p className="muted" style={{margin:"4px 0 0"}}>{a.summary}</p>
       {complete && <div className="banner" style={{marginTop:14}}>🎉 All done! You earned {a.video_requested ? 2 : 1} raffle {a.video_requested ? "entries" : "entry"}.</div>}
 
-      {a.video_url && <div className={"card step" + (a.watched ? " ok" : "")}>
-        <h3><span className="num">{++n}</span>Watch the video</h3>
-        {id ? <div className="video"><iframe src={`https://www.youtube-nocookie.com/embed/${id}`} allowFullScreen title={a.title}></iframe></div>
-            : <a className="btn dark" href={a.video_url} target="_blank" rel="noopener">Open the video</a>}
+      {(a.video_url || a.image_url) && <div className={"card step" + (a.watched ? " ok" : "")}>
+        <h3><span className="num">{++n}</span>{a.video_url ? "Watch the video" : "Watch how it's done"}</h3>
+        {a.image_url && <img className="media" src={a.image_url} alt={`How to do ${a.title}`} loading="lazy" />}
+        {a.video_url && (id ? <div className="video"><iframe src={`https://www.youtube-nocookie.com/embed/${id}`} allowFullScreen title={a.title}></iframe></div>
+            : <a className="btn dark" href={a.video_url} target="_blank" rel="noopener" style={{display:"inline-block",marginTop:8}}>Open the video</a>)}
         <Check on={a.watched} disabled={complete} label="I watched it" onChange={v => api.setStep(a.id, "watched", v)} />
       </div>}
 
@@ -525,11 +539,12 @@ function ProgressTab({ d }){
   );
 }
 
-const blankActivity = () => ({ title: "", summary: "", video_url: "", drill_steps: "", quiz: [], video_requested: false, video_note: "", sort_order: 0, published: true });
+const blankActivity = () => ({ title: "", summary: "", category: "", video_url: "", image_url: "", drill_steps: "", quiz: [], video_requested: false, video_note: "", sort_order: 0, published: true });
 
 function ActivitiesTab({ d, call, busy }){
   const [edit, setEdit] = useState(null);
-  if (edit) return <ActivityEditor initial={edit} busy={busy} onCancel={() => setEdit(null)}
+  const cats = [...new Set(["Hitting", "Fielding", "Pitching", ...d.activities.map(a => a.category).filter(Boolean)])];
+  if (edit) return <ActivityEditor initial={edit} busy={busy} cats={cats} onCancel={() => setEdit(null)}
     onSave={a => call("coach_save_activity", { p: a }).then(() => setEdit(null)).catch(() => {})}
     onDelete={a => { if (confirm(`Delete "${a.title}"? Players lose progress on it.`)) call("coach_delete_activity", { p_activity: a.id }).then(() => setEdit(null)); }} />;
   return (
@@ -537,16 +552,16 @@ function ActivitiesTab({ d, call, busy }){
       <button className="btn" style={{marginTop:14}} onClick={() => setEdit({ ...blankActivity(), sort_order: d.activities.length + 1 })}>+ New activity</button>
       {d.activities.map(a => (
         <div className="card row" key={a.id}>
-          <div className="grow"><b>{a.title}</b> {!a.published && <span className="badge">hidden</span>}
-            <div className="muted" style={{fontSize:".88rem"}}>{a.quiz.length} quiz Qs · {a.video_url ? "has video" : "no video yet"} · {a.video_requested ? "asks for a video (2 🎟️)" : "1 🎟️"}</div></div>
-          <button className="btn ghost small" onClick={() => setEdit({ ...a, video_url: a.video_url || "" })}>Edit</button>
+          <div className="grow"><Chip name={a.category} /><div><b>{a.title}</b> {!a.published && <span className="badge">hidden</span>}</div>
+            <div className="muted" style={{fontSize:".88rem"}}>{a.quiz.length} quiz Qs · {a.video_url ? "video" : a.image_url ? "image/GIF" : "nothing to watch yet"} · {a.video_requested ? "asks for a video (2 🎟️)" : "1 🎟️"}</div></div>
+          <button className="btn ghost small" onClick={() => setEdit({ ...a, category: a.category || "", video_url: a.video_url || "", image_url: a.image_url || "" })}>Edit</button>
         </div>
       ))}
     </>
   );
 }
 
-function ActivityEditor({ initial, onSave, onCancel, onDelete, busy }){
+function ActivityEditor({ initial, onSave, onCancel, onDelete, busy, cats }){
   const [a, setA] = useState(JSON.parse(JSON.stringify(initial)));
   const set = (k, v) => setA({ ...a, [k]: v });
   const setQ = (i, q) => { const qs = [...a.quiz]; qs[i] = q; set("quiz", qs); };
@@ -555,7 +570,11 @@ function ActivityEditor({ initial, onSave, onCancel, onDelete, busy }){
       <h3>{a.id ? "Edit activity" : "New activity"}</h3>
       <label>Title<input value={a.title} onChange={e => set("title", e.target.value)} /></label>
       <label>Short description<input value={a.summary} onChange={e => set("summary", e.target.value)} /></label>
+      <label>Category (the skill it works on)<input list="cat-list" value={a.category} onChange={e => set("category", e.target.value)} placeholder="Hitting, Fielding, Pitching..." /></label>
+      <datalist id="cat-list">{cats.map(c => <option key={c} value={c} />)}</datalist>
       <label>YouTube link (optional)<input type="url" value={a.video_url} onChange={e => set("video_url", e.target.value)} placeholder="https://youtube.com/..." /></label>
+      <label>Image or GIF link (optional)<input value={a.image_url} onChange={e => set("image_url", e.target.value)} placeholder="https://.../drill.gif or media/drill.gif" /></label>
+      {a.image_url.trim() && <img className="media" src={a.image_url.trim()} alt="Preview" style={{maxWidth:320}} />}
       <label>Drill steps (one per line)<textarea value={a.drill_steps} onChange={e => set("drill_steps", e.target.value)} /></label>
       <label className="check" style={{fontWeight:800}}><input type="checkbox" checked={a.video_requested} onChange={e => set("video_requested", e.target.checked)} />Ask players to send a video (worth 2 entries)</label>
       {a.video_requested && <label>Video instructions<input value={a.video_note} onChange={e => set("video_note", e.target.value)} placeholder="Send Coach a short clip on WhatsApp." /></label>}
