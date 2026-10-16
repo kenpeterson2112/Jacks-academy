@@ -81,13 +81,18 @@
   ol.drill{padding-left:1.3em;margin:8px 0}
   ol.drill li{margin:6px 0}
   .tip{background:var(--soft);border-left:4px solid var(--brand);border-radius:8px;padding:8px 12px;margin:8px 0;font-size:.95rem}
-  .gear{padding:0}
+  .gear{padding:0;position:relative}
   .gear summary{list-style:none;cursor:pointer;padding:14px 16px;font-weight:800;display:flex;align-items:center;gap:6px}
   .gear summary::-webkit-details-marker{display:none}
   .gear summary::after{content:"+";margin-left:auto;width:28px;height:28px;border-radius:50%;background:var(--soft);color:var(--brand);display:grid;place-items:center;font-size:1.2rem;font-weight:900}
   .gear[open] summary::after{content:"\2212"}
-  .gear ul{margin:0;padding:0 16px 14px 36px}
+  .gear ul{position:absolute;top:calc(100% + 6px);left:0;right:0;z-index:4;margin:0;padding:12px 16px 12px 36px;background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:0 10px 28px rgba(15,26,19,.18)}
   .gear li{margin:4px 0}
+  .fold{margin-top:24px}
+  .fold > summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:8px;padding:12px 16px;background:var(--card);border:1px solid var(--line);border-radius:16px;font-weight:900;font-size:1.05rem}
+  .fold > summary::-webkit-details-marker{display:none}
+  .fold > summary::after{content:"+";margin-left:auto;width:30px;height:30px;border-radius:50%;background:var(--soft);color:var(--brand);display:grid;place-items:center;font-size:1.3rem;font-weight:900}
+  .fold[open] > summary::after{content:"\2212"}
   .tip b{display:block;font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;color:var(--brand)}
   .opt{display:block;width:100%;text-align:left;padding:12px 14px;border:2px solid var(--line);border-radius:12px;background:#fff;margin:6px 0;cursor:pointer;font-weight:600}
   .opt.sel{border-color:var(--dark-2);background:var(--soft)}
@@ -346,8 +351,28 @@ function Player({ session, onLogout }){
   );
 }
 
+function ActCard({ a, onOpen }){
+  const steps = stepsFor(a); const done = steps.filter(([k]) => a[k]).length;
+  const complete = !!a.completed_at; const pct = Math.round(done / steps.length * 100);
+  return (
+    <button className="card act" onClick={() => onOpen(a.id)}>
+      <div className="ring" style={{background:`conic-gradient(${complete ? "var(--ok)" : "var(--accent)"} ${pct}%, var(--line) 0)`}}>
+        <div style={{background:"#fff",width:44,height:44,borderRadius:"50%",display:"grid",placeItems:"center"}}>{complete ? "✓" : `${done}/${steps.length}`}</div>
+      </div>
+      <div className="grow">
+        <Chip name={a.category} />
+        <div className="t">{a.title}</div>
+        <div className="muted" style={{fontSize:".9rem"}}>{a.summary}</div>
+        {complete && <span className="done-tag">Done! +{a.video_requested ? 2 : 1} 🎟️</span>}
+      </div>
+    </button>
+  );
+}
+
 function PlayerHome({ home, onOpen }){
   const answered = home.questions.filter(q => q.reply);
+  const todo = home.activities.filter(a => !a.completed_at);
+  const finished = home.activities.filter(a => a.completed_at);
   return (
     <>
       <div className="tickets">
@@ -357,23 +382,12 @@ function PlayerHome({ home, onOpen }){
       </div>
       <h2 style={{marginTop:20}}>Your activities</h2>
       {home.activities.length === 0 && <p className="muted">No activities yet. Check back soon!</p>}
-      {home.activities.map(a => {
-        const steps = stepsFor(a); const done = steps.filter(([k]) => a[k]).length;
-        const complete = !!a.completed_at; const pct = Math.round(done / steps.length * 100);
-        return (
-          <button key={a.id} className="card act" onClick={() => onOpen(a.id)}>
-            <div className="ring" style={{background:`conic-gradient(${complete ? "var(--ok)" : "var(--accent)"} ${pct}%, var(--line) 0)`}}>
-              <div style={{background:"#fff",width:44,height:44,borderRadius:"50%",display:"grid",placeItems:"center"}}>{complete ? "✓" : `${done}/${steps.length}`}</div>
-            </div>
-            <div className="grow">
-              <Chip name={a.category} />
-              <div className="t">{a.title}</div>
-              <div className="muted" style={{fontSize:".9rem"}}>{a.summary}</div>
-              {complete && <span className="done-tag">Done! +{a.video_requested ? 2 : 1} 🎟️</span>}
-            </div>
-          </button>
-        );
-      })}
+      {todo.map(a => <ActCard key={a.id} a={a} onOpen={onOpen} />)}
+      {todo.length === 0 && finished.length > 0 && <div className="banner">🎉 You finished every activity! Check back soon for more.</div>}
+      {finished.length > 0 && <details className="fold">
+        <summary>✅ Completed activities <span className="muted">({finished.length})</span></summary>
+        {finished.map(a => <ActCard key={a.id} a={a} onOpen={onOpen} />)}
+      </details>}
       {answered.length > 0 && <>
         <h2 style={{marginTop:24}}>Coach answered you</h2>
         <div className="card">{answered.map(q => (
@@ -453,9 +467,16 @@ function DrillSteps({ text }){
 
 function Equipment({ text }){
   const items = equipmentOf(text);
+  const ref = useRef(null);
+  /* The list floats over the page; tapping anywhere else (or Escape) closes it */
+  useEffect(() => {
+    const close = e => { const d = ref.current; if (d && d.open && (e.key === "Escape" || (e.type === "pointerdown" && !d.contains(e.target)))) d.open = false; };
+    document.addEventListener("pointerdown", close); document.addEventListener("keydown", close);
+    return () => { document.removeEventListener("pointerdown", close); document.removeEventListener("keydown", close); };
+  }, []);
   if (!items.length) return null;
   return (
-    <details className="card gear">
+    <details className="card gear" ref={ref}>
       <summary>🧰 What you need <span className="muted">({items.length})</span></summary>
       <ul>{items.map((x, i) => <li key={i}>{x}</li>)}</ul>
     </details>
@@ -736,7 +757,17 @@ function ActivityEditor({ initial, onSave, onCancel, onDelete, busy, cats }){
 function QuestionsTab({ d, call }){
   const title = id => (d.activities.find(a => a.id === id) || {}).title || "General";
   if (!d.questions.length) return <p className="muted" style={{marginTop:20}}>No questions yet.</p>;
-  return d.questions.map(q => <QuestionCard key={q.id} q={q} title={title(q.activity_id)} call={call} />);
+  const open = d.questions.filter(q => !q.reply), answered = d.questions.filter(q => q.reply);
+  return (
+    <>
+      {open.length === 0 && <p className="muted" style={{marginTop:20}}>No new questions. You're all caught up!</p>}
+      {open.map(q => <QuestionCard key={q.id} q={q} title={title(q.activity_id)} call={call} />)}
+      {answered.length > 0 && <details className="fold">
+        <summary>✅ Answered questions <span className="muted">({answered.length})</span></summary>
+        {answered.map(q => <QuestionCard key={q.id} q={q} title={title(q.activity_id)} call={call} />)}
+      </details>}
+    </>
+  );
 }
 function QuestionCard({ q, title, call }){
   const [r, setR] = useState(q.reply || "");
