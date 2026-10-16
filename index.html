@@ -267,10 +267,13 @@ function Login({ onLogin }){
       <p className="muted">Practice at home. Earn raffle entries.</p>
       <form className="card" onSubmit={submit}>
         {mode === "player" ? <>
-          <label>Your name<input value={name} onChange={e => setName(e.target.value)} autoCapitalize="words" autoComplete="username" required /></label>
-          <label>Your 4-digit PIN<input className="pin" type="password" inputMode="numeric" autoComplete="current-password"
+          <label>Your name<input name="username" value={name} onChange={e => setName(e.target.value)} autoCapitalize="words" autoCorrect="off" spellCheck={false} autoComplete="username" required /></label>
+          <label>Your 4-digit PIN<input className="pin" name="password" type="password" inputMode="numeric" autoComplete="current-password"
             value={pin} onChange={e => setPin(e.target.value.replace(/\D/g, "").slice(0, 4))} required pattern="[0-9]{4}" /></label>
-        </> : <label>Coach passphrase<input type="password" value={pass} onChange={e => setPass(e.target.value)} required /></label>}
+        </> : <>
+          <input type="text" name="username" autoComplete="username" value="Coach" readOnly hidden />
+          <label>Coach passphrase<input name="password" type="password" autoComplete="current-password" value={pass} onChange={e => setPass(e.target.value)} required /></label>
+        </>}
         {err && <div className="err">{err}</div>}
         <button className="btn big" disabled={busy}>{busy ? "Checking..." : "Let's go!"}</button>
       </form>
@@ -508,7 +511,7 @@ function AskCoach({ a, questions, api }){
   return (
     <div className="card">
       <h3>🧢 Ask Coach a question</h3>
-      <textarea value={body} onChange={e => setBody(e.target.value.slice(0, 500))} placeholder="What are you wondering about this drill?" />
+      <textarea autoComplete="off" value={body} onChange={e => setBody(e.target.value.slice(0, 500))} placeholder="What are you wondering about this drill?" />
       <button className="btn" style={{marginTop:8}} disabled={busy || !body.trim()} onClick={send}>{busy ? "Sending..." : "Send"}</button>
       {sent && <span style={{marginLeft:10,fontWeight:800,color:"var(--ok)"}}>Sent!</span>}
       {questions.map(q => (
@@ -576,7 +579,7 @@ function PlayerRow({ p, call, open, onToggle }){
         </div>
         <div className="row">
           <span className="lbl">New PIN</span>
-          <input value={pin} inputMode="numeric" style={{width:100,marginTop:0}} placeholder="4 digits"
+          <input autoComplete="off" value={pin} inputMode="numeric" style={{width:100,marginTop:0}} placeholder="4 digits"
             onChange={e => setPin(e.target.value.replace(/\D/g, "").slice(0, 4))} />
           <button className="btn ghost small" disabled={pin.length !== 4}
             onClick={() => call("coach_reset_pin", { p_player: p.id, p_pin: pin }).then(() => setPin("")).catch(() => {})}>Save PIN</button>
@@ -601,8 +604,8 @@ function PlayersTab({ d, call, busy }){
       <form className="card" onSubmit={add}>
         <h3>Add a player</h3>
         <div className="row">
-          <div className="grow" style={{minWidth:160}}><label>Name (what they type to log in)<input value={name} onChange={e => setName(e.target.value)} required placeholder="e.g. Liam S" /></label></div>
-          <div style={{width:130}}><label>4-digit PIN<input value={pin} inputMode="numeric" onChange={e => setPin(e.target.value.replace(/\D/g, "").slice(0, 4))} required pattern="[0-9]{4}" /></label></div>
+          <div className="grow" style={{minWidth:160}}><label>Name (what they type to log in)<input autoComplete="off" value={name} onChange={e => setName(e.target.value)} required placeholder="e.g. Liam S" /></label></div>
+          <div style={{width:130}}><label>4-digit PIN<input autoComplete="off" value={pin} inputMode="numeric" onChange={e => setPin(e.target.value.replace(/\D/g, "").slice(0, 4))} required pattern="[0-9]{4}" /></label></div>
         </div>
         <button className="btn" style={{marginTop:12}} disabled={busy}>Add player</button>
       </form>
@@ -686,27 +689,27 @@ function ActivityEditor({ initial, onSave, onCancel, onDelete, busy, cats }){
   return (
     <div className="card">
       <h3>{a.id ? "Edit activity" : "New activity"}</h3>
-      <label>Title<input value={a.title} onChange={e => set("title", e.target.value)} /></label>
-      <label>Short description<input value={a.summary} onChange={e => set("summary", e.target.value)} /></label>
-      <label>Category (the skill it works on)<input list="cat-list" value={a.category} onChange={e => set("category", e.target.value)} placeholder="Hitting, Fielding, Pitching..." /></label>
+      <label>Title<input autoComplete="off" value={a.title} onChange={e => set("title", e.target.value)} /></label>
+      <label>Short description<input autoComplete="off" value={a.summary} onChange={e => set("summary", e.target.value)} /></label>
+      <label>Category (the skill it works on)<input autoComplete="off" list="cat-list" value={a.category} onChange={e => set("category", e.target.value)} placeholder="Hitting, Fielding, Pitching..." /></label>
       <datalist id="cat-list">{cats.map(c => <option key={c} value={c} />)}</datalist>
-      <label>YouTube link (optional)<input type="url" value={a.video_url} onChange={e => set("video_url", e.target.value)} placeholder="https://youtube.com/..." /></label>
-      <label>Image or GIF link (optional)<input value={a.image_url} onChange={e => set("image_url", e.target.value)} placeholder="https://.../drill.gif or media/drill.gif" /></label>
+      <label>YouTube link (optional)<input autoComplete="off" type="url" value={a.video_url} onChange={e => set("video_url", e.target.value)} placeholder="https://youtube.com/..." /></label>
+      <label>Image or GIF link (optional)<input autoComplete="off" value={a.image_url} onChange={e => set("image_url", e.target.value)} placeholder="https://.../drill.gif or media/drill.gif" /></label>
       {a.image_url.trim() && <img className="media" src={a.image_url.trim()} alt="Preview" style={{maxWidth:320}} />}
-      <label>Drill steps (one per line)<textarea value={a.drill_steps} onChange={e => set("drill_steps", e.target.value)} style={{minHeight:160}} /></label>
+      <label>Drill steps (one per line)<textarea autoComplete="off" value={a.drill_steps} onChange={e => set("drill_steps", e.target.value)} style={{minHeight:160}} /></label>
       <p className="muted" style={{fontSize:".8rem",margin:"4px 0 0"}}>Start a line with "Equipment:" for each thing players need (shown at the top), or with "Setup:" or "Look for:" to show it as a tip instead of a numbered step.</p>
       <label className="check" style={{fontWeight:800}}><input type="checkbox" checked={a.video_requested} onChange={e => set("video_requested", e.target.checked)} />Ask players to send a video (worth 2 entries)</label>
-      {a.video_requested && <label>Video instructions<input value={a.video_note} onChange={e => set("video_note", e.target.value)} placeholder="Send Coach a short clip on WhatsApp." /></label>}
+      {a.video_requested && <label>Video instructions<input autoComplete="off" value={a.video_note} onChange={e => set("video_note", e.target.value)} placeholder="Send Coach a short clip on WhatsApp." /></label>}
 
       <h3 style={{marginTop:18}}>Quiz</h3>
       {a.quiz.map((q, i) => (
         <div className="qedit" key={i}>
           <div className="row"><b className="grow">Question {i + 1}</b><button className="btn ghost small" onClick={() => set("quiz", a.quiz.filter((_, j) => j !== i))}>Remove</button></div>
-          <input value={q.q} onChange={e => setQ(i, { ...q, q: e.target.value })} placeholder="Question" />
+          <input autoComplete="off" value={q.q} onChange={e => setQ(i, { ...q, q: e.target.value })} placeholder="Question" />
           {q.options.map((o, oi) => (
             <div className="optrow" key={oi}>
               <input type="radio" name={"ans" + i} checked={q.answer === oi} onChange={() => setQ(i, { ...q, answer: oi })} title="Correct answer" />
-              <input value={o} onChange={e => { const os = [...q.options]; os[oi] = e.target.value; setQ(i, { ...q, options: os }); }} placeholder={`Answer ${oi + 1}`} />
+              <input autoComplete="off" value={o} onChange={e => { const os = [...q.options]; os[oi] = e.target.value; setQ(i, { ...q, options: os }); }} placeholder={`Answer ${oi + 1}`} />
               {q.options.length > 2 && <button className="btn ghost small" onClick={() => { const os = q.options.filter((_, j) => j !== oi); setQ(i, { ...q, options: os, answer: Math.min(q.answer, os.length - 1) }); }}>×</button>}
             </div>
           ))}
@@ -718,7 +721,7 @@ function ActivityEditor({ initial, onSave, onCancel, onDelete, busy, cats }){
 
       <div className="row" style={{marginTop:14}}>
         <label className="check" style={{margin:0}}><input type="checkbox" checked={a.published} onChange={e => set("published", e.target.checked)} />Visible to players</label>
-        <div style={{width:110}}><label>Order<input type="number" value={a.sort_order} onChange={e => set("sort_order", parseInt(e.target.value || "0", 10))} /></label></div>
+        <div style={{width:110}}><label>Order<input autoComplete="off" type="number" value={a.sort_order} onChange={e => set("sort_order", parseInt(e.target.value || "0", 10))} /></label></div>
       </div>
       <div className="row" style={{marginTop:16}}>
         <button className="btn" disabled={busy} onClick={() => onSave(a)}>Save</button>
@@ -741,7 +744,7 @@ function QuestionCard({ q, title, call }){
     <div className="card">
       <div className="muted" style={{fontSize:".85rem"}}>{q.player} · {title} · {new Date(q.created_at).toLocaleDateString()}</div>
       <p style={{fontWeight:800,margin:"6px 0"}}>❓ {q.body}</p>
-      <textarea value={r} onChange={e => setR(e.target.value)} placeholder="Your reply" style={{minHeight:60}} />
+      <textarea autoComplete="off" value={r} onChange={e => setR(e.target.value)} placeholder="Your reply" style={{minHeight:60}} />
       <button className="btn small" style={{marginTop:6}} onClick={() => call("coach_reply", { p_question: q.id, p_reply: r })}>{q.reply ? "Update reply" : "Reply"}</button>
     </div>
   );
@@ -765,7 +768,7 @@ function RaffleTab({ d, setD, run, t, call, busy }){
         <h3>Draw a winner</h3>
         <p className="muted">{total} {total === 1 ? "entry" : "entries"} in this round. More entries = better odds.</p>
         <div className="row" style={{marginTop:10}}>
-          <input className="grow" value={prize} onChange={e => setPrize(e.target.value)} placeholder="Prize" />
+          <input autoComplete="off" className="grow" value={prize} onChange={e => setPrize(e.target.value)} placeholder="Prize" />
           <button className="btn" disabled={busy || rolling || !total || !prize.trim()} onClick={() => draw(prize)}>Draw</button>
         </div>
         {rolling && <div className="roller">{rolling}</div>}
@@ -796,8 +799,9 @@ function SettingsTab({ run, t }){
     <form className="card" onSubmit={save}>
       <h3>Change coach passphrase</h3>
       <p className="muted">Share this with your other coaches. At least 8 characters.</p>
-      <label>New passphrase<input type="password" value={p1} onChange={e => setP1(e.target.value)} required /></label>
-      <label>Type it again<input type="password" value={p2} onChange={e => setP2(e.target.value)} required /></label>
+      <input type="text" name="username" autoComplete="username" value="Coach" readOnly hidden />
+      <label>New passphrase<input name="new-password" type="password" autoComplete="new-password" value={p1} onChange={e => setP1(e.target.value)} required /></label>
+      <label>Type it again<input name="confirm-password" type="password" autoComplete="new-password" value={p2} onChange={e => setP2(e.target.value)} required /></label>
       <button className="btn" style={{marginTop:12}}>Save</button>
       {msg && <p style={{fontWeight:800}}>{msg}</p>}
     </form>
