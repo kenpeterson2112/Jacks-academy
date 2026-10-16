@@ -9,10 +9,10 @@
 <link href="https://fonts.googleapis.com/css2?family=Graduate&family=Nunito:wght@400;600;800;900&display=swap" rel="stylesheet">
 <style>
   :root{
-    /* Northumberland Jacks branding: black, Jacks green, white, with Be On Time Athletics yellow as the accent */
-    --dark:#0f1a13; --dark-2:#1e5c36; --brand:#16703d; --accent:#f2cf1d; --bg:#eef2ef;
-    --ink:#121a15; --muted:#5b6a60; --line:#d3ddd6; --ok:#23864a; --ok-bg:#e0f1e5; --card:#fff;
-    --alert:#c0392b; --alert-bg:#fbe3e0; --alert-ink:#8a2318; --soft:#e3ece6;
+    /* Northumberland Jacks branding: black and Jacks green on a maple-bat tan page with cream cards, with Be On Time Athletics yellow as the accent */
+    --dark:#0f1a13; --dark-2:#1e5c36; --brand:#16703d; --accent:#f2cf1d; --bg:#ecdfc3;
+    --ink:#121a15; --muted:#5b6a60; --line:#dccdab; --ok:#23864a; --ok-bg:#e0f1e5; --card:#fbf8f0;
+    --alert:#c0392b; --alert-bg:#fbe3e0; --alert-ink:#8a2318; --soft:#ebe3cf;
     --display:"Graduate", Rockwell, Georgia, serif;
   }
   *{box-sizing:border-box}
@@ -26,16 +26,16 @@
   header.top{background:var(--dark);color:#fff;padding:14px 16px;border-bottom:4px solid var(--brand);position:sticky;top:0;z-index:5;box-shadow:0 2px 10px rgba(0,0,0,.15)}
   header.top .row{max-width:1000px;margin:0 auto;display:flex;align-items:center;gap:12px}
   header.top h1{font-size:1.15rem;margin:0;flex:1}
-  .backbtn{background:#fff;color:var(--dark);border:0;border-radius:999px;padding:9px 18px;font-weight:900;font-size:1rem;cursor:pointer;white-space:nowrap}
+  .backbtn{background:var(--card);color:var(--dark);border:0;border-radius:999px;padding:9px 18px;font-weight:900;font-size:1rem;cursor:pointer;white-space:nowrap}
   .head-tickets{font-size:1rem;padding:6px 14px;white-space:nowrap}
   .actnav{margin:18px 0}
   .actnav .btn.big{margin-top:10px}
-  .actnav .btn.ghost{background:#fff}
+  .actnav .btn.ghost{background:var(--card)}
   .muted{color:var(--muted)}
   .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;margin:14px 0;box-shadow:0 1px 3px rgba(15,26,19,.06)}
   label{display:block;font-weight:800;margin:10px 0 4px;font-size:.92rem}
   input[type=text],input[type=password],input[type=url],input[type=number],input:not([type]),textarea,select{
-    width:100%;padding:12px 14px;border:2px solid var(--line);border-radius:12px;background:#fff;color:var(--ink);margin-top:4px}
+    width:100%;padding:12px 14px;border:2px solid var(--line);border-radius:12px;background:var(--card);color:var(--ink);margin-top:4px}
   input:focus,textarea:focus{outline:none;border-color:var(--dark-2)}
   textarea{min-height:90px;resize:vertical}
   .pin{font-size:1.8rem;letter-spacing:.6em;text-align:center}
@@ -55,9 +55,6 @@
   .login{max-width:420px;margin:0 auto;padding:48px 16px;text-align:center}
   .login form{text-align:left}
   .logo{font-size:3.4rem}
-  .tickets{display:flex;align-items:center;gap:14px;background:var(--accent);border-radius:18px;padding:16px 18px;margin:16px 0;color:var(--ink)}
-  .tickets .n{font-size:2.4rem;font-weight:900;line-height:1}
-  .tickets small{display:block;font-weight:700}
   .act{display:flex;gap:14px;align-items:center;cursor:pointer;width:100%;text-align:left;font:inherit;color:inherit}
   .act .ring{flex:0 0 56px;height:56px;border-radius:50%;display:grid;place-items:center;font-weight:900;font-size:.9rem}
   .act .t{font-weight:900;font-size:1.05rem}
@@ -73,7 +70,7 @@
   .step h3{display:flex;align-items:center;gap:10px;font-size:1.05rem}
   .num{width:28px;height:28px;border-radius:50%;background:var(--dark);color:#fff;display:grid;place-items:center;font-size:.85rem;flex:0 0 28px}
   .step.ok .num{background:var(--ok)}
-  .check{display:flex;align-items:center;gap:12px;padding:14px;border:2px solid var(--line);border-radius:12px;cursor:pointer;font-weight:800;margin-top:10px;background:#fff}
+  .check{display:flex;align-items:center;gap:12px;padding:14px;border:2px solid var(--line);border-radius:12px;cursor:pointer;font-weight:800;margin-top:10px;background:var(--card)}
   .check input{width:26px;height:26px;accent-color:var(--ok)}
   .check.on{border-color:var(--ok);background:var(--ok-bg)}
   .video{position:relative;padding-top:56.25%;border-radius:12px;overflow:hidden;background:#000;margin-top:8px}
@@ -94,7 +91,7 @@
   .fold > summary::after{content:"+";margin-left:auto;width:30px;height:30px;border-radius:50%;background:var(--soft);color:var(--brand);display:grid;place-items:center;font-size:1.3rem;font-weight:900}
   .fold[open] > summary::after{content:"\2212"}
   .tip b{display:block;font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;color:var(--brand)}
-  .opt{display:block;width:100%;text-align:left;padding:12px 14px;border:2px solid var(--line);border-radius:12px;background:#fff;margin:6px 0;cursor:pointer;font-weight:600}
+  .opt{display:block;width:100%;text-align:left;padding:12px 14px;border:2px solid var(--line);border-radius:12px;background:var(--card);margin:6px 0;cursor:pointer;font-weight:600}
   .opt.sel{border-color:var(--dark-2);background:var(--soft)}
   .opt.right{border-color:var(--ok);background:var(--ok-bg)}
   .opt.wrong{border-color:var(--alert);background:var(--alert-bg)}
@@ -106,7 +103,7 @@
   .qa{border-top:1px solid var(--line);padding:10px 0}
   .qa .reply{background:var(--soft);border-radius:10px;padding:8px 10px;margin-top:6px}
   .tabs{display:flex;gap:6px;overflow-x:auto;padding:12px 0 4px;position:sticky;top:56px;background:var(--bg);z-index:4}
-  .tab{border:2px solid var(--line);background:#fff;border-radius:999px;padding:8px 14px;font-weight:800;cursor:pointer;white-space:nowrap}
+  .tab{border:2px solid var(--line);background:var(--card);border-radius:999px;padding:8px 14px;font-weight:800;cursor:pointer;white-space:nowrap}
   .tab.on{background:var(--dark);color:#fff;border-color:var(--dark)}
   .badge{background:var(--alert);color:#fff;border-radius:999px;padding:0 7px;font-size:.75rem;margin-left:4px}
   .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
@@ -121,7 +118,7 @@
   .grid{overflow-x:auto}
   table{border-collapse:collapse;width:100%;font-size:.88rem}
   th,td{border-bottom:1px solid var(--line);padding:6px;text-align:center}
-  th:first-child,td:first-child{text-align:left;position:sticky;left:0;background:#fff;font-weight:800;z-index:1}
+  th:first-child,td:first-child{text-align:left;position:sticky;left:0;background:var(--card);font-weight:800;z-index:1}
   table.progress tbody th[scope=row]{min-width:130px;max-width:190px;font-size:.85rem;line-height:1.25}
   table.progress th.pname{min-width:52px;max-width:90px;font-size:.8rem;vertical-align:bottom}
   table.progress tr.cat th{padding-top:14px;border-bottom:0;position:static}
@@ -341,7 +338,7 @@ function Player({ session, onLogout }){
 
   return (
     <Shell title={act ? "" : `Hi ${home.name}!`} onLogout={act ? null : onLogout} onBack={act ? back : null}
-      right={act && <span className="pill head-tickets" title="Your raffle entries">🎟️ {home.entries}</span>}>
+      right={<span className="pill head-tickets" title="Your raffle entries">🎟️ {home.entries}</span>}>
       {err && <div className="err">{err}</div>}
       {act
         ? <ActivityView a={act} questions={home.questions.filter(q => q.activity_id === act.id)} api={api} onBack={back} next={next} onNext={nextAct} />
@@ -357,7 +354,7 @@ function ActCard({ a, onOpen }){
   return (
     <button className="card act" onClick={() => onOpen(a.id)}>
       <div className="ring" style={{background:`conic-gradient(${complete ? "var(--ok)" : "var(--accent)"} ${pct}%, var(--line) 0)`}}>
-        <div style={{background:"#fff",width:44,height:44,borderRadius:"50%",display:"grid",placeItems:"center"}}>{complete ? "✓" : `${done}/${steps.length}`}</div>
+        <div style={{background:"var(--card)",width:44,height:44,borderRadius:"50%",display:"grid",placeItems:"center"}}>{complete ? "✓" : `${done}/${steps.length}`}</div>
       </div>
       <div className="grow">
         <Chip name={a.category} />
@@ -375,12 +372,8 @@ function PlayerHome({ home, onOpen }){
   const finished = home.activities.filter(a => a.completed_at);
   return (
     <>
-      <div className="tickets">
-        <div style={{fontSize:"2.2rem"}}>🎟️</div>
-        <div><div className="n">{home.entries}</div><small>raffle {home.entries === 1 ? "entry" : "entries"}</small></div>
-        <div className="grow" style={{fontSize:".85rem",fontWeight:700,textAlign:"right"}}>Finish activities to earn more. Video activities earn 2!</div>
-      </div>
       <h2 style={{marginTop:20}}>Your activities</h2>
+      <p className="muted" style={{margin:"0 0 4px",fontSize:".9rem"}}>Finish an activity to earn a 🎟️ raffle entry. Video activities earn 2!</p>
       {home.activities.length === 0 && <p className="muted">No activities yet. Check back soon!</p>}
       {todo.map(a => <ActCard key={a.id} a={a} onOpen={onOpen} />)}
       {todo.length === 0 && finished.length > 0 && <div className="banner">🎉 You finished every activity! Check back soon for more.</div>}
