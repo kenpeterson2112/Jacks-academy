@@ -16,7 +16,7 @@ Started as a UBC MET ETEC 523 "DIY mobile project" exercise. It is a working pro
 - `ground-ball-drill.html`: standalone animated drill page (SVG + vanilla JS). Linked from activities, not embedded in the app.
 - `supabase/schema.sql`: the original database setup (tables + RPC functions + grants). Reference copy; already applied.
 - `supabase/2026-10-15-categories-and-new-drills.sql`: adds `activities.category` and `activities.image_url`, updates `_refresh_completion`, `player_home` and `coach_save_activity`, hides the 3 original activities (category 'Retired', unpublished), and loads the 15 Skills & Drills activities. Already applied; reference only. Ken later deleted the 3 retired activities himself, so only the 15 drills remain.
-- `supabase/2026-10-16-drill-directions.sql`: full step-by-step directions for the 15 drills from the coach's "Skills & Drills" handout (summary and drill_steps only). Already applied; reference only.
+- `supabase/2026-10-16-drill-directions.sql`: full step-by-step directions for the 15 drills from the coach's "Skills & Drills" handout (summary and drill_steps), plus YouTube links for 10 of them. Already applied; reference only.
 - `media/`: images and GIFs used by activities. Reference them from an activity as `media/<file>`.
 - `archive/outfield-iq/`: the first version of this repo (Outfield IQ, React + Vite). Kept as is and still deployed at `/Jacks-academy/outfield-iq/`. Copy pieces out of it rather than editing it.
 

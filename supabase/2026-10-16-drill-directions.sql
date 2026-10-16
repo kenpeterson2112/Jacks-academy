@@ -141,3 +141,22 @@ Look for: The towel snapping out in front of your body, and a free, fast arm thr
   where title = 'Towel Drill';
 
 commit;
+
+-- YouTube videos for 10 of the drills (the 4 hitting drills and Extension Drill have none yet).
+-- A video adds a required "Watch the video" step. Applied the same day; nobody had progress yet.
+begin;
+update public.activities a set video_url = v.url
+from (values
+  ('On Knees: Pancake Glove', 'https://youtu.be/172vNRosyxU'),
+  ('On Knees: Normal Glove', 'https://youtu.be/O1jc3rmy-jQ'),
+  ('Standing: Pancake Glove', 'https://youtu.be/u-b-TLgz_o4'),
+  ('Standing: Normal Glove', 'https://youtu.be/QFt4BDQmqb4'),
+  ('Sit Drill (PVC Pipe)', 'https://youtu.be/kZkcUicLWSo'),
+  ('Shoulder Hip Separation #1 (PVC)', 'https://youtu.be/A-Y1OrsG1g8'),
+  ('Shoulder Hip Separation #2 (PVC)', 'https://youtu.be/c36JNH80uFA'),
+  ('Shoulder Hip Separation #3 (PVC)', 'https://youtu.be/ShsgY3DvfvQ'),
+  ('Full Motion (PVC Pipe)', 'https://youtu.be/T21y3eOa1B4'),
+  ('Towel Drill', 'https://youtu.be/JKmweW1za5s')
+) as v(title, url)
+where a.title = v.title;
+commit;
