@@ -32,6 +32,7 @@ jobs:
           mkdir -p pages-root/outfield-iq
           cp -r archive/outfield-iq/dist/. pages-root/outfield-iq/
           cp *.html pages-root/
+          if [ -d media ]; then cp -r media pages-root/; fi
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:

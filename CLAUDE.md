@@ -8,13 +8,15 @@ Started as a UBC MET ETEC 523 "DIY mobile project" exercise. It is a working pro
 
 - Ken is not a terminal user. Explain changes in plain language, and prefer GitHub web upload / web editor steps over git CLI instructions when he needs to do something himself.
 - No em dashes in any text written for Ken or shown in the app.
-- Hosting: GitHub Pages at https://kenpeterson2112.github.io/Jacks-academy/. A push to `main` (the default branch) runs `.github/workflows/deploy-pages.yml`, which publishes the top-level `*.html` files and the archived Outfield IQ build. Do not move it to Netlify.
+- Hosting: GitHub Pages at https://kenpeterson2112.github.io/Jacks-academy/. A push to `main` (the default branch) runs `.github/workflows/deploy-pages.yml`, which publishes the top-level `*.html` files, the `media/` folder (images and GIFs for activities) and the archived Outfield IQ build. Do not move it to Netlify.
 
 ## Files
 
 - `index.html`: the whole app. One file: React 18 + Babel standalone from CDN (versions pinned), supabase-js v2. No build step. Keep it single-file unless Ken asks otherwise.
 - `ground-ball-drill.html`: standalone animated drill page (SVG + vanilla JS). Linked from activities, not embedded in the app.
-- `supabase/schema.sql`: the full database setup (tables + RPC functions + grants). Reference copy; it has already been applied.
+- `supabase/schema.sql`: the original database setup (tables + RPC functions + grants). Reference copy; already applied.
+- `supabase/2026-10-15-categories-and-new-drills.sql`: adds `activities.category` and `activities.image_url`, updates `_refresh_completion`, `player_home` and `coach_save_activity`, hides the 3 original activities (category 'Retired', unpublished), and loads the 15 Skills & Drills activities. Already applied; reference only. Ken later deleted the 3 retired activities himself, so only the 15 drills remain.
+- `media/`: images and GIFs used by activities. Reference them from an activity as `media/<file>`.
 - `archive/outfield-iq/`: the first version of this repo (Outfield IQ, React + Vite). Kept as is and still deployed at `/Jacks-academy/outfield-iq/`. Copy pieces out of it rather than editing it.
 
 ## Backend (Supabase)
@@ -28,7 +30,8 @@ Started as a UBC MET ETEC 523 "DIY mobile project" exercise. It is a working pro
 
 ## Product rules
 
-- Activity checklist: Watch video (only if `video_url`), Pass the quiz (only if quiz has questions, must get all right), Do the drill (always), Send your video (only if `video_requested`).
+- Every activity has a `category` (Hitting, Fielding, Pitching so far), shown as a coloured chip. No grouping or collapsing yet, by choice.
+- Activity checklist: Watch (only if `video_url` or `image_url`; an image/GIF shows above the video), Pass the quiz (only if quiz has questions, must get all right), Do the drill (always), Send your video (only if `video_requested`).
 - Kids send videos to the coach on WhatsApp. The app only stores a checkbox ("I sent my video"). Do not add video uploads without asking: it involves storing video of minors.
 - Completion is computed server-side in `_refresh_completion` and is permanent once earned (unchecking a box later does not remove it).
 - Raffle: 1 entry per completed activity, 2 if it requested a video, plus coach-given bonus entries. Only completions since the current round started count. `coach_new_round` resets the round and bonuses. Draws are weighted by entries.
@@ -41,6 +44,8 @@ Branding follows the Northumberland Jacks x Be On Time Athletics winter developm
 
 ## Known limits / ideas
 
-- Activity videos must be YouTube links. Supporting a GIF or a link to a page like `ground-ball-drill.html` in the Watch step was discussed but not built.
+- Videos must be YouTube links. Images/GIFs can be any image URL, or `media/<file>` for a file committed to this repo.
+- The 15 drills have no quiz questions yet.
+- Database changes that delete rows have been blocked from Claude's Supabase connection; prefer hiding (`published = false`) over deleting, or give Ken SQL to run in the Supabase SQL Editor.
 - No per-coach accounts; all coaches share one passphrase.
 - Free tier Supabase pauses after a week of no activity.
