@@ -101,9 +101,21 @@
   .pill{background:var(--accent);color:var(--ink);border-radius:999px;padding:2px 10px;font-weight:900;font-size:.85rem}
   .grid{overflow-x:auto}
   table{border-collapse:collapse;width:100%;font-size:.88rem}
-  th,td{border-bottom:1px solid var(--line);padding:8px;text-align:center;white-space:nowrap}
-  th:first-child,td:first-child{text-align:left;position:sticky;left:0;background:#fff;font-weight:800}
-  td.c-done{background:var(--ok-bg);color:var(--ok);font-weight:900}
+  th,td{border-bottom:1px solid var(--line);padding:6px;text-align:center}
+  th:first-child,td:first-child{text-align:left;position:sticky;left:0;background:#fff;font-weight:800;z-index:1}
+  table.progress tbody th[scope=row]{min-width:130px;max-width:190px;font-size:.85rem;line-height:1.25}
+  table.progress th.pname{min-width:52px;max-width:90px;font-size:.8rem;vertical-align:bottom;word-break:break-word}
+  table.progress .sum{color:var(--muted);font-weight:800;font-size:.8rem}
+  table.progress tr.cat th{padding-top:14px;border-bottom:0}
+  table.progress tfoot th,table.progress tfoot td{border-bottom:0;border-top:2px solid var(--line);font-size:.85rem}
+  .mark{width:34px;height:34px;border-radius:8px;display:inline-grid;place-items:center;vertical-align:middle}
+  .mark.todo{background:var(--bg)}
+  .mark.doing{background:#fdf2bf}
+  .mark.done{background:var(--ok)}
+  .legend{display:flex;flex-wrap:wrap;gap:6px 16px;margin:4px 0 10px;font-size:.85rem;font-weight:700;color:var(--muted)}
+  .legend span{display:flex;align-items:center;gap:6px}
+  .legend .mark{width:26px;height:26px;border-radius:6px}
+  .legend .mark svg{width:18px;height:18px}
   .qedit{border:2px dashed var(--line);border-radius:12px;padding:10px;margin:10px 0}
   .optrow{display:flex;gap:8px;align-items:center;margin-top:6px}
   .optrow input[type=radio]{width:22px;height:22px;accent-color:var(--ok)}
@@ -522,26 +534,46 @@ function PlayersTab({ d, call, busy }){
   );
 }
 
+const MARKS = {
+  todo: { label: "Not started", icon: <circle cx="12" cy="12" r="6" fill="#b9c4bc" /> },
+  doing: { label: "In progress", icon: <g stroke="var(--ink)" strokeWidth="1.6" strokeLinejoin="round" strokeLinecap="round">
+    <path d="M6 3.5h12M6 20.5h12" fill="none" /><path d="M7.5 3.5h9L12 12zM12 12l4.5 8.5h-9z" fill="var(--accent)" /></g> },
+  done: { label: "Complete", icon: <path d="M6 12.5l4 4 8-8.5" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" /> },
+};
+
+function Mark({ kind, title }){
+  return <span className={"mark " + kind} title={title || MARKS[kind].label}><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">{MARKS[kind].icon}</svg></span>;
+}
+
 function ProgressTab({ d }){
   const acts = d.activities.filter(a => a.published);
   const pr = {}; d.progress.forEach(r => { pr[r.player_id + ":" + r.activity_id] = r; });
+  const status = (p, a) => {
+    const r = pr[p.id + ":" + a.id]; const steps = stepsFor(a);
+    const n = r ? steps.filter(([k]) => r[k]).length : 0;
+    const kind = r && r.completed_at ? "done" : n > 0 ? "doing" : "todo";
+    return { kind, title: `${p.name}: ${MARKS[kind].label}` + (kind === "doing" ? ` (${n} of ${steps.length} steps)` : "") };
+  };
+  if (!d.players.length || !acts.length) return <p className="muted" style={{marginTop:20}}>Progress shows up here once there are players and visible activities.</p>;
+  const rows = []; let cat = null;
+  acts.forEach(a => {
+    if (a.category !== cat) { cat = a.category; if (cat) rows.push(<tr key={"cat-" + a.id} className="cat"><th colSpan={d.players.length + 2}><Chip name={cat} /></th></tr>); }
+    const marks = d.players.map(p => status(p, a));
+    rows.push(<tr key={a.id}><th scope="row">{a.title}</th>
+      {marks.map((m, i) => <td key={d.players[i].id}><Mark kind={m.kind} title={m.title} /></td>)}
+      <td className="sum">{marks.filter(m => m.kind === "done").length}</td></tr>);
+  });
   return (
-    <div className="card grid">
+    <div className="card">
       <h3>Who has done what</h3>
-      <p className="muted" style={{fontSize:".85rem"}}>✓ = complete · 📹 = says they sent a video (check WhatsApp)</p>
-      <table>
-        <thead><tr><th>Player</th>{acts.map(a => <th key={a.id} title={a.title}>{a.title.length > 16 ? a.title.slice(0, 15) + "…" : a.title}</th>)}<th>🎟️</th></tr></thead>
-        <tbody>{d.players.map(p => (
-          <tr key={p.id}><td>{p.name}</td>
-            {acts.map(a => {
-              const r = pr[p.id + ":" + a.id]; const steps = stepsFor(a);
-              if (!r) return <td key={a.id} className="muted">·</td>;
-              const n = steps.filter(([k]) => r[k]).length;
-              return <td key={a.id} className={r.completed_at ? "c-done" : ""}>{r.completed_at ? "✓" : `${n}/${steps.length}`}{r.video_sent ? " 📹" : ""}</td>;
-            })}
-            <td><b>{p.entries}</b></td></tr>
-        ))}</tbody>
-      </table>
+      <div className="legend">{Object.keys(MARKS).map(k => <span key={k}><Mark kind={k} />{MARKS[k].label}</span>)}</div>
+      <div className="grid">
+        <table className="progress">
+          <thead><tr><th>Activity</th>{d.players.map(p => <th key={p.id} className="pname">{p.name}</th>)}<th className="sum" title="Players who finished it">Done</th></tr></thead>
+          <tbody>{rows}</tbody>
+          <tfoot><tr><th scope="row">🎟️ Raffle entries</th>{d.players.map(p => <td key={p.id}><b>{p.entries}</b></td>)}<td /></tr></tfoot>
+        </table>
+      </div>
     </div>
   );
 }
