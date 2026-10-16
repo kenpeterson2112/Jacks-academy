@@ -34,7 +34,7 @@ Started as a UBC MET ETEC 523 "DIY mobile project" exercise. It is a working pro
 - Every activity has a `category` (Hitting, Fielding, Pitching so far), shown as a coloured chip. No grouping or collapsing yet, by choice.
 - Activity checklist: Watch (only if `video_url` or `image_url`; an image/GIF shows above the video), Pass the quiz (only if quiz has questions, must get all right), Do the drill (always), Send your video (only if `video_requested`).
 - Drill steps are one per line. Lines starting with `Equipment:` (one item each) fill an expandable "What you need" list at the top of the activity. Lines starting with `Setup:` or `Look for:` show as tips (Setup above the numbered steps, Look for below). Every other line is a numbered step.
-- Player navigation is kept simple for ages 9 to 11: inside an activity the top bar shows a big Back button and their raffle tickets (Log out only on the home screen), the bottom has Next (their next unfinished activity) and All activities, and the phone's back button returns to the list (browser history).
+- Player navigation is kept simple for ages 9 to 11: the top bar always shows their raffle tickets (a small yellow pill, top right); inside an activity it also shows a big Back button (Log out only on the home screen), the bottom has Next (their next unfinished activity) and All activities, and the phone's back button returns to the list (browser history).
 - Finished activities (player home) and answered questions (coach Questions tab) move into a collapsed section at the bottom. Collapsed by default; the open state is not remembered. The equipment list opens as a floating box that closes on a tap elsewhere.
 - Kids send videos to the coach on WhatsApp. The app only stores a checkbox ("I sent my video"). Do not add video uploads without asking: it involves storing video of minors.
 - Completion is computed server-side in `_refresh_completion` and is permanent once earned (unchecking a box later does not remove it).
@@ -44,7 +44,7 @@ Started as a UBC MET ETEC 523 "DIY mobile project" exercise. It is a working pro
 
 ## Design
 
-Branding follows the Northumberland Jacks x Be On Time Athletics winter development poster: near-black `#0f1a13` (header, dark buttons), Jacks green `#16703d` (main buttons, header stripe), BOT yellow `#f2cf1d` (raffle tickets, in-progress rings, draw winner), light green-grey page `#eef2ef` on white cards. Red `#c0392b` is only for wrong answers, alerts and remove buttons. Colours are CSS variables in `:root` at the top of `index.html`. Headings in Graduate (Google Fonts), body in Nunito. Mobile-first: most players use a parent's phone.
+Branding follows the Northumberland Jacks x Be On Time Athletics winter development poster: near-black `#0f1a13` (header, dark buttons), Jacks green `#16703d` (main buttons, header stripe), BOT yellow `#f2cf1d` (raffle ticket count, in-progress rings, draw winner), on a maple-bat tan page `#ecdfc3` with cream cards `#fbf8f0` (no bright white backgrounds anywhere; use `var(--card)`). Soft tan `#ebe3cf` for tips, lines `#dccdab`. Red `#c0392b` is only for wrong answers, alerts and remove buttons. Colours are CSS variables in `:root` at the top of `index.html`. Headings in Graduate (Google Fonts), body in Nunito. Mobile-first: most players use a parent's phone.
 
 ## Known limits / ideas
 
