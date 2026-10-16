@@ -26,6 +26,11 @@
   header.top{background:var(--dark);color:#fff;padding:14px 16px;border-bottom:4px solid var(--brand);position:sticky;top:0;z-index:5;box-shadow:0 2px 10px rgba(0,0,0,.15)}
   header.top .row{max-width:1000px;margin:0 auto;display:flex;align-items:center;gap:12px}
   header.top h1{font-size:1.15rem;margin:0;flex:1}
+  .backbtn{background:#fff;color:var(--dark);border:0;border-radius:999px;padding:9px 18px;font-weight:900;font-size:1rem;cursor:pointer;white-space:nowrap}
+  .head-tickets{font-size:1rem;padding:6px 14px;white-space:nowrap}
+  .actnav{margin:18px 0}
+  .actnav .btn.big{margin-top:10px}
+  .actnav .btn.ghost{background:#fff}
   .muted{color:var(--muted)}
   .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;margin:14px 0;box-shadow:0 1px 3px rgba(15,26,19,.06)}
   label{display:block;font-weight:800;margin:10px 0 4px;font-size:.92rem}
@@ -214,15 +219,19 @@ function App(){
   return <Player session={session} onLogout={logout} />;
 }
 
-function Shell({ title, onLogout, children, wide, onRefresh, refreshing }){
+function Shell({ title, onLogout, children, wide, onRefresh, refreshing, onBack, right }){
   return (
     <>
       <header className="top"><div className="row">
-        <span style={{fontSize:"1.4rem"}}>⚾</span><h1>{title}</h1>
+        {onBack
+          ? <button className="backbtn" onClick={onBack}>← Back</button>
+          : <span style={{fontSize:"1.4rem"}}>⚾</span>}
+        <h1>{title}</h1>
+        {right}
         {onRefresh && <button className={"refresh" + (refreshing ? " spin" : "")} onClick={onRefresh} disabled={refreshing} title="Refresh" aria-label="Refresh">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 12a8 8 0 1 1-2.34-5.66"/><path d="M20 4v4.5h-4.5"/></svg>
         </button>}
-        <button className="link" onClick={onLogout}>Log out</button>
+        {onLogout && <button className="link" onClick={onLogout}>Log out</button>}
       </div></header>
       <div className={"wrap" + (wide ? " wide" : "")}>{children}</div>
     </>
@@ -275,7 +284,7 @@ function Login({ onLogin }){
 /* ====== Player ====== */
 function Player({ session, onLogout }){
   const [home, setHomeRaw] = useState(null);
-  const [openId, setOpenId] = useState(null);
+  const [openId, setOpenId] = useState(() => (history.state && history.state.jhpAct) || null);
   const [err, setErr] = useState("");
   const [toast, setToast] = useState("");
   const prevEntries = useRef(null);
@@ -295,6 +304,19 @@ function Player({ session, onLogout }){
   }
   useEffect(() => { guard(rpc("player_home", { p_token: session.token })).then(setHome).catch(() => {}); }, []);
 
+  /* Opening an activity adds a browser history entry, so the phone's back button or swipe returns to the list */
+  useEffect(() => {
+    const onPop = e => { setOpenId((e.state && e.state.jhpAct) || null); window.scrollTo(0, 0); };
+    window.addEventListener("popstate", onPop);
+    return () => window.removeEventListener("popstate", onPop);
+  }, []);
+  const openAct = id => { history.pushState({ jhpAct: id }, ""); setOpenId(id); window.scrollTo(0, 0); };
+  const nextAct = id => { history.replaceState({ jhpAct: id }, ""); setOpenId(id); window.scrollTo(0, 0); };
+  const back = () => {
+    if (history.state && history.state.jhpAct) history.back();
+    else { setOpenId(null); window.scrollTo(0, 0); }
+  };
+
   const api = {
     setStep: (id, step, val) => guard(rpc("player_set_step", { p_token: session.token, p_activity: id, p_step: step, p_value: val })).then(setHome).catch(() => {}),
     quiz: async (id, answers) => { const r = await guard(rpc("player_submit_quiz", { p_token: session.token, p_activity: id, p_answers: answers })); setHome(r.home); return r; },
@@ -303,13 +325,19 @@ function Player({ session, onLogout }){
 
   if (!home) return <Shell title="Loading..." onLogout={onLogout}>{err && <div className="err">{err}</div>}</Shell>;
   const act = home.activities.find(a => a.id === openId);
+  let next = null;
+  if (act) {
+    const list = home.activities, i = list.indexOf(act);
+    next = [...list.slice(i + 1), ...list.slice(0, i)].find(x => !x.completed_at) || null;
+  }
 
   return (
-    <Shell title={act ? act.title : `Hi ${home.name}!`} onLogout={onLogout}>
+    <Shell title={act ? "" : `Hi ${home.name}!`} onLogout={act ? null : onLogout} onBack={act ? back : null}
+      right={act && <span className="pill head-tickets" title="Your raffle entries">🎟️ {home.entries}</span>}>
       {err && <div className="err">{err}</div>}
       {act
-        ? <ActivityView a={act} questions={home.questions.filter(q => q.activity_id === act.id)} api={api} onBack={() => setOpenId(null)} />
-        : <PlayerHome home={home} onOpen={id => { setOpenId(id); window.scrollTo(0, 0); }} />}
+        ? <ActivityView a={act} questions={home.questions.filter(q => q.activity_id === act.id)} api={api} onBack={back} next={next} onNext={nextAct} />
+        : <PlayerHome home={home} onOpen={openAct} />}
       {toast && <div className="toast">{toast}</div>}
     </Shell>
   );
@@ -353,14 +381,14 @@ function PlayerHome({ home, onOpen }){
   );
 }
 
-function ActivityView({ a, questions, api, onBack }){
+function ActivityView({ a, questions, api, onBack, next, onNext }){
   const id = ytId(a.video_url);
   const complete = !!a.completed_at;
   let n = 0;
   return (
     <>
-      <button className="link" onClick={onBack}>← All activities</button>
-      <div style={{marginTop:4}}><Chip name={a.category} /></div>
+      <div style={{marginTop:16}}><Chip name={a.category} /></div>
+      <h2 style={{margin:"2px 0 0"}}>{a.title}</h2>
       <p className="muted" style={{margin:"4px 0 0"}}>{a.summary}</p>
       <Equipment text={a.drill_steps} />
       {complete && <div className="banner" style={{marginTop:14}}>🎉 All done! You earned {a.video_requested ? 2 : 1} raffle {a.video_requested ? "entries" : "entry"}.</div>}
@@ -389,6 +417,11 @@ function ActivityView({ a, questions, api, onBack }){
         <p>{a.video_note || "Send Coach a short video of you doing the drill on WhatsApp."}</p>
         <Check on={a.video_sent} disabled={complete} label="I sent my video" onChange={v => api.setStep(a.id, "video_sent", v)} />
       </div>}
+
+      <div className="actnav">
+        {next && <button className={"btn big" + (complete ? "" : " ghost")} onClick={() => onNext(next.id)}>Next: {next.title} →</button>}
+        <button className="btn big ghost" onClick={onBack}>← All activities</button>
+      </div>
 
       <AskCoach a={a} questions={questions} api={api} />
     </>
