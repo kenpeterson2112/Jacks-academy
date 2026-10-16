@@ -16,7 +16,7 @@ Started as a UBC MET ETEC 523 "DIY mobile project" exercise. It is a working pro
 - `ground-ball-drill.html`: standalone animated drill page (SVG + vanilla JS). Linked from activities, not embedded in the app.
 - `supabase/schema.sql`: the original database setup (tables + RPC functions + grants). Reference copy; already applied.
 - `supabase/2026-10-15-categories-and-new-drills.sql`: adds `activities.category` and `activities.image_url`, updates `_refresh_completion`, `player_home` and `coach_save_activity`, hides the 3 original activities (category 'Retired', unpublished), and loads the 15 Skills & Drills activities. Already applied; reference only. Ken later deleted the 3 retired activities himself, so only the 15 drills remain.
-- `supabase/2026-10-16-drill-directions.sql`: full step-by-step directions for the 15 drills from the coach's "Skills & Drills" handout (summary and drill_steps), plus YouTube links for 10 of them. Already applied; reference only.
+- `supabase/2026-10-16-drill-directions.sql`: full step-by-step directions for the 15 drills from the coach's "Skills & Drills" handout (summary and drill_steps), plus YouTube links for 10 of them and each drill's equipment. Already applied; reference only.
 - `media/`: images and GIFs used by activities. Reference them from an activity as `media/<file>`.
 - `archive/outfield-iq/`: the first version of this repo (Outfield IQ, React + Vite). Kept as is and still deployed at `/Jacks-academy/outfield-iq/`. Copy pieces out of it rather than editing it.
 
@@ -33,7 +33,7 @@ Started as a UBC MET ETEC 523 "DIY mobile project" exercise. It is a working pro
 
 - Every activity has a `category` (Hitting, Fielding, Pitching so far), shown as a coloured chip. No grouping or collapsing yet, by choice.
 - Activity checklist: Watch (only if `video_url` or `image_url`; an image/GIF shows above the video), Pass the quiz (only if quiz has questions, must get all right), Do the drill (always), Send your video (only if `video_requested`).
-- Drill steps are one per line. Lines starting with `Setup:` or `Look for:` show as tips (Setup above the numbered steps, Look for below) instead of numbered steps.
+- Drill steps are one per line. Lines starting with `Equipment:` (one item each) fill an expandable "What you need" list at the top of the activity. Lines starting with `Setup:` or `Look for:` show as tips (Setup above the numbered steps, Look for below). Every other line is a numbered step.
 - Kids send videos to the coach on WhatsApp. The app only stores a checkbox ("I sent my video"). Do not add video uploads without asking: it involves storing video of minors.
 - Completion is computed server-side in `_refresh_completion` and is permanent once earned (unchecking a box later does not remove it).
 - Raffle: 1 entry per completed activity, 2 if it requested a video, plus coach-given bonus entries. Only completions since the current round started count. `coach_new_round` resets the round and bonuses. Draws are weighted by entries.

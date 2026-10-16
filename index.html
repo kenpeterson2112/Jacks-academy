@@ -76,6 +76,13 @@
   ol.drill{padding-left:1.3em;margin:8px 0}
   ol.drill li{margin:6px 0}
   .tip{background:var(--soft);border-left:4px solid var(--brand);border-radius:8px;padding:8px 12px;margin:8px 0;font-size:.95rem}
+  .gear{padding:0}
+  .gear summary{list-style:none;cursor:pointer;padding:14px 16px;font-weight:800;display:flex;align-items:center;gap:6px}
+  .gear summary::-webkit-details-marker{display:none}
+  .gear summary::after{content:"+";margin-left:auto;width:28px;height:28px;border-radius:50%;background:var(--soft);color:var(--brand);display:grid;place-items:center;font-size:1.2rem;font-weight:900}
+  .gear[open] summary::after{content:"\2212"}
+  .gear ul{margin:0;padding:0 16px 14px 36px}
+  .gear li{margin:4px 0}
   .tip b{display:block;font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;color:var(--brand)}
   .opt{display:block;width:100%;text-align:left;padding:12px 14px;border:2px solid var(--line);border-radius:12px;background:#fff;margin:6px 0;cursor:pointer;font-weight:600}
   .opt.sel{border-color:var(--dark-2);background:var(--soft)}
@@ -355,6 +362,7 @@ function ActivityView({ a, questions, api, onBack }){
       <button className="link" onClick={onBack}>← All activities</button>
       <div style={{marginTop:4}}><Chip name={a.category} /></div>
       <p className="muted" style={{margin:"4px 0 0"}}>{a.summary}</p>
+      <Equipment text={a.drill_steps} />
       {complete && <div className="banner" style={{marginTop:14}}>🎉 All done! You earned {a.video_requested ? 2 : 1} raffle {a.video_requested ? "entries" : "entry"}.</div>}
 
       {(a.video_url || a.image_url) && <div className={"card step" + (a.watched ? " ok" : "")}>
@@ -387,18 +395,34 @@ function ActivityView({ a, questions, api, onBack }){
   );
 }
 
-/* Lines starting with "Setup:" or "Look for:" show as tips; every other line is a numbered step */
-const TIP = /^(setup|look for):\s*/i;
+/* Drill step lines: "Equipment:" lines list what you need, "Setup:" and "Look for:" lines show as tips,
+   every other line is a numbered step */
+const LABEL = /^(equipment|setup|look for):\s*/i;
+const labelOf = s => (s.match(LABEL) || [])[1];
+const drillLines = text => (text || "").split("\n").map(s => s.trim()).filter(Boolean);
+const equipmentOf = text => drillLines(text).filter(s => /^equipment$/i.test(labelOf(s) || "")).map(s => s.replace(LABEL, "")).filter(Boolean);
+
 function DrillSteps({ text }){
-  const lines = text.split("\n").map(s => s.trim()).filter(Boolean);
-  const tip = label => lines.filter(s => TIP.test(s) && s.toLowerCase().startsWith(label))
-    .map((s, i) => <div className="tip" key={label + i}><b>{s.match(TIP)[1]}</b>{s.replace(TIP, "")}</div>);
+  const lines = drillLines(text);
+  const tip = label => lines.filter(s => (labelOf(s) || "").toLowerCase() === label)
+    .map((s, i) => <div className="tip" key={label + i}><b>{labelOf(s)}</b>{s.replace(LABEL, "")}</div>);
   return (
     <>
       {tip("setup")}
-      <ol className="drill">{lines.filter(s => !TIP.test(s)).map((s, i) => <li key={i}>{s}</li>)}</ol>
+      <ol className="drill">{lines.filter(s => !LABEL.test(s)).map((s, i) => <li key={i}>{s}</li>)}</ol>
       {tip("look for")}
     </>
+  );
+}
+
+function Equipment({ text }){
+  const items = equipmentOf(text);
+  if (!items.length) return null;
+  return (
+    <details className="card gear">
+      <summary>🧰 What you need <span className="muted">({items.length})</span></summary>
+      <ul>{items.map((x, i) => <li key={i}>{x}</li>)}</ul>
+    </details>
   );
 }
 
@@ -637,7 +661,7 @@ function ActivityEditor({ initial, onSave, onCancel, onDelete, busy, cats }){
       <label>Image or GIF link (optional)<input value={a.image_url} onChange={e => set("image_url", e.target.value)} placeholder="https://.../drill.gif or media/drill.gif" /></label>
       {a.image_url.trim() && <img className="media" src={a.image_url.trim()} alt="Preview" style={{maxWidth:320}} />}
       <label>Drill steps (one per line)<textarea value={a.drill_steps} onChange={e => set("drill_steps", e.target.value)} style={{minHeight:160}} /></label>
-      <p className="muted" style={{fontSize:".8rem",margin:"4px 0 0"}}>Start a line with "Setup:" or "Look for:" to show it as a tip instead of a numbered step.</p>
+      <p className="muted" style={{fontSize:".8rem",margin:"4px 0 0"}}>Start a line with "Equipment:" for each thing players need (shown at the top), or with "Setup:" or "Look for:" to show it as a tip instead of a numbered step.</p>
       <label className="check" style={{fontWeight:800}}><input type="checkbox" checked={a.video_requested} onChange={e => set("video_requested", e.target.checked)} />Ask players to send a video (worth 2 entries)</label>
       {a.video_requested && <label>Video instructions<input value={a.video_note} onChange={e => set("video_note", e.target.value)} placeholder="Send Coach a short clip on WhatsApp." /></label>}
 

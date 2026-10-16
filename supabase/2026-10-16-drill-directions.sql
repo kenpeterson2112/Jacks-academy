@@ -160,3 +160,46 @@ from (values
 ) as v(title, url)
 where a.title = v.title;
 commit;
+
+-- Equipment for each drill (from page 1 of the handout), stored as "Equipment:" lines at the top of
+-- drill_steps. The app shows them in an expandable "What you need" list at the top of the activity.
+begin;
+update public.activities a set drill_steps = v.gear || E'\n' || a.drill_steps
+from (values
+  ('Single Tee', 'Equipment: Batting tee and home plate
+Equipment: Your game bat
+Equipment: Baseballs or soft balls, and a net or screen'),
+  ('Bat Speed', 'Equipment: Batting tee and home plate
+Equipment: Regular bat, plus a lighter and a heavier bat
+Equipment: Baseballs or soft balls, and a net or screen'),
+  ('Inside, Middle, and Outside', 'Equipment: Batting tee and home plate
+Equipment: Your game bat
+Equipment: Baseballs or soft balls, and a net or screen'),
+  ('Drop Toss', 'Equipment: Home plate
+Equipment: Your game bat
+Equipment: Baseballs or soft balls, and a net or screen
+Equipment: A partner'),
+  ('On Knees: Pancake Glove', 'Equipment: A flat training glove (pancake)
+Equipment: A pipe or marker line laid on the ground as a path guide
+Equipment: A partner, plus a bucket of balls'),
+  ('On Knees: Normal Glove', 'Equipment: Your regular game glove
+Equipment: A pipe or marker line laid on the ground as a path guide
+Equipment: A partner, plus a bucket of balls'),
+  ('Standing: Pancake Glove', 'Equipment: A flat training glove (pancake)
+Equipment: A pipe or marker line laid on the ground as a path guide
+Equipment: A partner, plus a bucket of balls'),
+  ('Standing: Normal Glove', 'Equipment: Your regular game glove
+Equipment: A pipe or marker line laid on the ground as a path guide
+Equipment: A partner, plus a bucket of balls'),
+  ('Sit Drill (PVC Pipe)', 'Equipment: A long PVC pipe that rests across both shoulders (or a broom stick)'),
+  ('Shoulder Hip Separation #1 (PVC)', 'Equipment: A long PVC pipe that rests across both shoulders (or a broom stick)'),
+  ('Shoulder Hip Separation #2 (PVC)', 'Equipment: A long PVC pipe that rests across both shoulders (or a broom stick)'),
+  ('Shoulder Hip Separation #3 (PVC)', 'Equipment: A long PVC pipe that rests across both shoulders (or a broom stick)'),
+  ('Full Motion (PVC Pipe)', 'Equipment: A long PVC pipe that rests across both shoulders (or a broom stick)'),
+  ('Extension Drill', 'Equipment: A ball
+Equipment: A partner to hold the ball or a target'),
+  ('Towel Drill', 'Equipment: A hand towel
+Equipment: A clear, safe space in front of you')
+) as v(title, gear)
+where a.title = v.title and a.drill_steps not like 'Equipment:%';
+commit;
