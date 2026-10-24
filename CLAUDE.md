@@ -17,6 +17,7 @@ Started as a UBC MET ETEC 523 "DIY mobile project" exercise. It is a working pro
 - `supabase/schema.sql`: the original database setup (tables + RPC functions + grants). Reference copy; already applied.
 - `supabase/2026-10-15-categories-and-new-drills.sql`: adds `activities.category` and `activities.image_url`, updates `_refresh_completion`, `player_home` and `coach_save_activity`, hides the 3 original activities (category 'Retired', unpublished), and loads the 15 Skills & Drills activities. Already applied; reference only. Ken later deleted the 3 retired activities himself, so only the 15 drills remain.
 - `supabase/2026-10-16-drill-directions.sql`: full step-by-step directions for the 15 drills from the coach's "Skills & Drills" handout (summary and drill_steps), plus YouTube links for 10 of them and each drill's equipment. Already applied; reference only.
+- `supabase/2026-10-23-hip-rotation-drills.sql`: adds two Hitting activities (Hip Rotation #1 and #2) with their YouTube videos and the coach's full directions, renumbering Fielding and Pitching sort order so Hitting stays grouped (17 activities total). Prepared Oct 23, 2026; Ken applies it in the Supabase SQL Editor.
 - `media/`: images and GIFs used by activities. Reference them from an activity as `media/<file>`.
 - `archive/outfield-iq/`: the first version of this repo (Outfield IQ, React + Vite). Kept as is and still deployed at `/Jacks-academy/outfield-iq/`. Copy pieces out of it rather than editing it.
 
@@ -49,7 +50,7 @@ Branding follows the Northumberland Jacks x Be On Time Athletics winter developm
 ## Known limits / ideas
 
 - Videos must be YouTube links. Images/GIFs can be any image URL, or `media/<file>` for a file committed to this repo.
-- The 15 drills have no quiz questions yet.
+- The drills have no quiz questions yet.
 - Database changes that delete rows have been blocked from Claude's Supabase connection; prefer hiding (`published = false`) over deleting, or give Ken SQL to run in the Supabase SQL Editor.
 - No per-coach accounts; all coaches share one passphrase.
 - Free tier Supabase pauses after a week of no activity.
