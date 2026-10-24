@@ -52,4 +52,4 @@ Branding follows the Northumberland Jacks x Be On Time Athletics winter developm
 - The 15 drills have no quiz questions yet.
 - Database changes that delete rows have been blocked from Claude's Supabase connection; prefer hiding (`published = false`) over deleting, or give Ken SQL to run in the Supabase SQL Editor.
 - No per-coach accounts; all coaches share one passphrase.
-- Free tier Supabase pauses after a week of no activity.
+- Free tier Supabase pauses after a week of no activity. `.github/workflows/keep-supabase-awake.yml` pings the database every 3 days to prevent this (a red run means it did not answer, likely paused). Ken's free plan allows only 2 active projects, so restoring one can mean pausing another. GitHub turns off scheduled workflows after 60 days with no commits to the repo; re-enable it from the Actions tab if that happens.
