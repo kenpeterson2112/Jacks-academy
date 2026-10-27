@@ -1,0 +1,33 @@
+name: Keep Supabase awake
+
+# The free Supabase plan pauses a project after about a week with no activity.
+# This sends one harmless request every 3 days so the app's database never
+# counts as idle. It reads and changes no data: player_home is called with a
+# made-up session token, and the database answers NOT_LOGGED_IN.
+# If the run goes red, the database did not answer (most likely it is paused).
+
+on:
+  schedule:
+    - cron: "17 9 */3 * *"
+  workflow_dispatch:
+  pull_request:
+    paths: [.github/workflows/keep-supabase-awake.yml]
+
+permissions:
+  contents: read
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping the database
+        env:
+          # Same public key that is in index.html.
+          SUPABASE_URL: https://ieivgzhdgjizwabdlixs.supabase.co
+          SUPABASE_KEY: sb_publishable_heTKat-H4MX-1uTABW3R4A_hBqyQ7e5
+        run: |
+          body=$(curl -sS --max-time 30 -X POST "$SUPABASE_URL/rest/v1/rpc/player_home" \
+            -H "apikey: $SUPABASE_KEY" -H "Content-Type: application/json" \
+            -d '{"p_token":"00000000-0000-0000-0000-000000000000"}')
+          echo "$body"
+          echo "$body" | grep -q NOT_LOGGED_IN
