@@ -21,6 +21,7 @@ Started as a UBC MET ETEC 523 "DIY mobile project" exercise. It is a working pro
 - `supabase/2026-11-06-equipment-requests.sql`: adds `questions.kind` ('question' or 'request'), returns it from `player_home` and `coach_dashboard`, and adds `player_request_equipment`. Already applied Nov 6, 2026; reference only.
 - `supabase/2026-11-06-drill-sheet-update.sql`: brings 5 drills (Single Tee, both Normal Glove drills, Shoulder Hip Separation #1, Full Motion) in line with the coaches' revised sheet; Ken hides the rest himself. Also adds the sheet's Hip Rotation #1 (whose steps are the October #2 drill, so it uses the "Hip rotation #2" video) and Single Tee's video. Already applied; reference only.
 - `supabase/2026-11-06-reset-data.sql`: adds `coach_reset(token, what)` for the Settings tab's Reset data options ('questions', 'draws', 'tickets', 'progress'). Already applied; reference only.
+- `supabase/2026-11-06-set-raffle-total.sql`: adds `coach_set_entries` (coach sets a player's raffle total; the coach adjustment in `bonus_entries` can now be negative), the `_earned_entries` helper, and clamps `_entries` at 0. Already applied; reference only.
 - `media/`: images and GIFs used by activities. Reference them from an activity as `media/<file>`.
 - `archive/outfield-iq/`: the first version of this repo (Outfield IQ, React + Vite). Kept as is and still deployed at `/Jacks-academy/outfield-iq/`. Copy pieces out of it rather than editing it.
 
@@ -45,7 +46,7 @@ Started as a UBC MET ETEC 523 "DIY mobile project" exercise. It is a working pro
 - Settings tab has a Reset data card: questions and equipment requests, past raffle draws, raffle tickets (same as a new round), and activity progress. Each asks for a second tap and warns it cannot be undone (the free Supabase plan has no restorable backups). Players, PINs and activities are never reset.
 - Kids send videos to the coach on WhatsApp. The app only stores a checkbox ("I sent my video"). Do not add video uploads without asking: it involves storing video of minors.
 - Completion is computed server-side in `_refresh_completion` and is permanent once earned (unchecking a box later does not remove it).
-- Raffle: 1 entry per completed activity, 2 if it requested a video, plus coach-given bonus entries. Only completions since the current round started count. `coach_new_round` resets the round and bonuses. Draws are weighted by entries.
+- Raffle: 1 entry per completed activity, 2 if it requested a video, plus a coach adjustment (`bonus_entries`, may be negative; the total never goes below 0). On the Players tab, Manage, the coach types or steps the player's total raffle tickets and saves; the app works out the adjustment. Only completions since the current round started count. `coach_new_round` resets the round and bonuses. Draws are weighted by entries.
 - Prizes: no preset list. The coach types the prize into the box on the Raffle tab for each draw.
 - Quiz answers are graded in the database; the client never receives the correct answers.
 

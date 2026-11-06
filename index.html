@@ -176,6 +176,7 @@ const store = {
 
 const FRIENDLY = {
   BAD_LOGIN: "That name and PIN don't match. Try again!",
+  BAD_TOTAL: "Raffle tickets must be a number from 0 to 999.",
   LOCKED: "Too many tries. Wait 10 minutes or ask Coach to reset your PIN.",
   PIN_MUST_BE_4_DIGITS: "PIN must be exactly 4 digits.",
   NO_ENTRIES_YET: "Nobody has any raffle entries yet.",
@@ -606,6 +607,11 @@ function Coach({ session, onLogout }){
 
 function PlayerRow({ p, call, open, onToggle }){
   const [pin, setPin] = useState(""); const [sure, setSure] = useState(false);
+  const [tix, setTix] = useState(String(p.entries));
+  useEffect(() => { setTix(String(p.entries)); }, [p.entries]);
+  const tixNum = tix === "" ? null : parseInt(tix, 10);
+  const earned = p.entries - p.bonus;
+  const step = d => setTix(String(Math.max(0, Math.min(999, (tixNum ?? p.entries) + d))));
   return (
     <div className="p">
       <div className="head">
@@ -614,11 +620,21 @@ function PlayerRow({ p, call, open, onToggle }){
         <button className="btn ghost small" onClick={() => { onToggle(); setSure(false); setPin(""); }} aria-expanded={open}>{open ? "Done" : "Manage"}</button>
       </div>
       {open && <div className="tools">
-        <div className="row">
-          <span className="lbl">Bonus entries</span>
-          <button className="btn ghost small" onClick={() => call("coach_set_bonus", { p_player: p.id, p_bonus: p.bonus - 1 })} disabled={p.bonus <= 0} aria-label="Remove a bonus entry">−</button>
-          <b style={{minWidth:20,textAlign:"center"}}>{p.bonus}</b>
-          <button className="btn ghost small" onClick={() => call("coach_set_bonus", { p_player: p.id, p_bonus: p.bonus + 1 })} aria-label="Add a bonus entry">+</button>
+        <div>
+          <div className="row">
+            <span className="lbl">Raffle tickets</span>
+            <button className="btn ghost small" onClick={() => step(-1)} disabled={(tixNum ?? 0) <= 0} aria-label="One less ticket">−</button>
+            <input value={tix} inputMode="numeric" autoComplete="off" aria-label="Raffle tickets" style={{width:64,marginTop:0,textAlign:"center",fontWeight:800}}
+              onChange={e => setTix(e.target.value.replace(/\D/g, "").slice(0, 3))} />
+            <button className="btn ghost small" onClick={() => step(1)} disabled={(tixNum ?? 0) >= 999} aria-label="One more ticket">+</button>
+            {tixNum !== null && tixNum !== p.entries && <>
+              <button className="btn small" onClick={() => call("coach_set_entries", { p_player: p.id, p_total: tixNum }).catch(() => {})}>Save</button>
+              <button className="btn ghost small" onClick={() => setTix(String(p.entries))}>Undo</button>
+            </>}
+          </div>
+          <div className="muted" style={{fontSize:".82rem",marginTop:4}}>
+            {earned} from finished activities{p.bonus > 0 ? `, ${p.bonus} added by a coach` : p.bonus < 0 ? `, ${-p.bonus} taken away by a coach` : ""}. Starting a new raffle round sets this back to 0.
+          </div>
         </div>
         <div className="row">
           <span className="lbl">New PIN</span>
