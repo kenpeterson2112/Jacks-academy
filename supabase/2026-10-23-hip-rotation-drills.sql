@@ -1,3 +1,5 @@
+-- SUPERSEDED, DO NOT RUN: never applied. The coaches' November sheet replaced it; see
+-- 2026-11-06-drill-sheet-update.sql (one Hip Rotation drill, using the 'Hip rotation #2' video).
 -- Jacks Home Practice: two new Hitting activities, Hip Rotation #1 and #2, from the coach.
 -- Each gets its YouTube video and the full step-by-step directions he sent on 2026-10-23.
 -- The drills slot in at sort_order 5 and 6 so the Hitting group stays together:

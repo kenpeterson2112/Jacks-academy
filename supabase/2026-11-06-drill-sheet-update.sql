@@ -2,8 +2,9 @@
 -- Ken is hiding every drill not on the sheet. These 5 were brought in line with it: new summaries,
 -- 'Look for' lines and equipment (5 ft PVC pipe, sock net, whiffle/tennis balls). Videos unchanged;
 -- all 5 already had the right one (or none, for Single Tee).
--- The sheet's new 'Hip Rotation #1' hitting drill is NOT added yet: the video sent for it is titled
--- 'Hip rotation #2' on YouTube, so Ken is checking with the other coach first.
+-- Later the same day: the sheet's 'Hip Rotation #1' was added (its steps are the October 'Hip Rotation #2'
+-- drill word for word, so it uses that video, nRCKcFZhPfY), and Single Tee got its video ('Hitting Drill - Tee').
+-- The October file 2026-10-23-hip-rotation-drills.sql was never applied and is now superseded.
 -- APPLIED to project ieivgzhdgjizwabdlixs on 2026-11-06. Reference copy only; do not run again.
 
 begin;
@@ -66,4 +67,21 @@ Finish balanced, then reset.
 Do 5 reps at a smooth pace, then 5 at game speed.
 Look for: All four pieces from the sequence showing up, one right after the other.'
   where title = 'Full Motion (PVC Pipe)';
+commit;
+
+-- Hip Rotation #1 and the Single Tee video (applied 2026-11-06)
+begin;
+update public.activities set video_url = 'https://youtu.be/hWvyun24ZgI' where title = 'Single Tee';
+insert into public.activities(category, sort_order, title, summary, drill_steps, video_url)
+select 'Hitting', 0, 'Hip Rotation #1', 'Pipe swing: rotate your hips and sweep through the hitting zone.', 'Equipment: Batting tee
+Equipment: PVC pipe (5 feet in length is recommended)
+Start in your stance beside the tee, holding the pipe out level with your hands together.
+Stride and land with your front leg firm and your back leg driving.
+Rotate your hips toward the pitcher.
+Let your hands follow and sweep the pipe level through the tee-height zone.
+Finish high, with the pipe over your front shoulder and your weight on your front leg.
+Hold the finish for one second.
+Reset and repeat 5 to 8 times.
+Look for: Hips leading the swing, a level pipe through the zone, and a high, balanced finish.', 'https://youtu.be/nRCKcFZhPfY'
+where not exists (select 1 from public.activities where title ilike 'Hip Rotation%');
 commit;
