@@ -16,6 +16,7 @@
     --display:"Graduate", Rockwell, Georgia, serif;
   }
   *{box-sizing:border-box}
+  html{scrollbar-gutter:stable}
   html,body{margin:0;background:var(--bg);color:var(--ink);font-family:Nunito,system-ui,sans-serif;font-size:17px;-webkit-tap-highlight-color:transparent}
   button,input,textarea,select{font:inherit}
   h1,h2,h3{margin:0 0 .4em;line-height:1.15}
@@ -111,9 +112,12 @@
   .hidebox{display:flex;align-items:center;gap:6px;margin:0;font-size:.88rem;font-weight:800;cursor:pointer;white-space:nowrap}
   .hidebox input{width:20px;height:20px;accent-color:var(--dark)}
   .qa .reply{background:var(--soft);border-radius:10px;padding:8px 10px;margin-top:6px}
-  .tabs{display:flex;gap:6px;overflow-x:auto;padding:12px 0 4px;position:sticky;top:56px;background:var(--bg);z-index:4}
-  .tab{border:2px solid var(--line);background:var(--card);border-radius:999px;padding:8px 14px;font-weight:800;cursor:pointer;white-space:nowrap}
-  .tab.on{background:var(--dark);color:#fff;border-color:var(--dark)}
+  header.top .tabs{max-width:1000px;margin:8px auto -4px;display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
+  header.top .tabs::-webkit-scrollbar{display:none}
+  .tab{border:2px solid rgba(255,255,255,.28);background:transparent;color:#fff;border-radius:999px;padding:5px 13px;font-size:.92rem;font-weight:800;cursor:pointer;white-space:nowrap;flex:0 0 auto}
+  .tab.on{background:var(--card);color:var(--dark);border-color:var(--card)}
+  .tab:not(.on):hover{border-color:rgba(255,255,255,.6)}
+  @media (max-width:520px){ .wide-only{display:none} }
   .badge{background:var(--alert);color:#fff;border-radius:999px;padding:0 7px;font-size:.75rem;margin-left:4px}
   .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
   .grow{flex:1;min-width:0}
@@ -176,6 +180,7 @@ const store = {
 
 const FRIENDLY = {
   BAD_LOGIN: "That name and PIN don't match. Try again!",
+  BAD_TOTAL: "Raffle tickets must be a number from 0 to 999.",
   LOCKED: "Too many tries. Wait 10 minutes or ask Coach to reset your PIN.",
   PIN_MUST_BE_4_DIGITS: "PIN must be exactly 4 digits.",
   NO_ENTRIES_YET: "Nobody has any raffle entries yet.",
@@ -232,7 +237,7 @@ function App(){
   return <Player session={session} onLogout={logout} />;
 }
 
-function Shell({ title, onLogout, children, wide, onRefresh, refreshing, onBack, right }){
+function Shell({ title, onLogout, children, wide, onRefresh, refreshing, onBack, right, nav }){
   return (
     <>
       <header className="top"><div className="row">
@@ -245,7 +250,7 @@ function Shell({ title, onLogout, children, wide, onRefresh, refreshing, onBack,
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 12a8 8 0 1 1-2.34-5.66"/><path d="M20 4v4.5h-4.5"/></svg>
         </button>}
         {onLogout && <button className="link" onClick={onLogout}>Log out</button>}
-      </div></header>
+      </div>{nav}</header>
       <div className={"wrap" + (wide ? " wide" : "")}>{children}</div>
     </>
   );
@@ -587,12 +592,13 @@ function Coach({ session, onLogout }){
   const tabs = [["players","Players"],["progress","Progress"],["activities","Activities"],["questions","Questions"],["raffle","Raffle"],["settings","Settings"]];
 
   return (
-    <Shell title="Coach dashboard" onLogout={onLogout} wide onRefresh={() => call("coach_dashboard").catch(() => {})} refreshing={busy}>
-      <div className="tabs">{tabs.map(([k, l]) => (
-        <button key={k} className={"tab" + (tab === k ? " on" : "")} onClick={() => setTab(k)}>
+    <Shell title={<>Coach<span className="wide-only"> dashboard</span></>} onLogout={onLogout} wide onRefresh={() => call("coach_dashboard").catch(() => {})} refreshing={busy}
+      nav={<nav className="tabs" aria-label="Coach sections">{tabs.map(([k, l]) => (
+        <button key={k} className={"tab" + (tab === k ? " on" : "")} aria-current={tab === k ? "page" : undefined} onClick={() => { setTab(k); window.scrollTo(0, 0); }}>
           {l}{k === "questions" && open > 0 && <span className="badge">{open}</span>}
         </button>))}
-      </div>
+      </nav>}>
+      <div style={{height:4}} />
       {err && <div className="err">{err}</div>}
       {tab === "players" && <PlayersTab d={d} call={call} busy={busy} />}
       {tab === "progress" && <ProgressTab d={d} />}
@@ -606,6 +612,11 @@ function Coach({ session, onLogout }){
 
 function PlayerRow({ p, call, open, onToggle }){
   const [pin, setPin] = useState(""); const [sure, setSure] = useState(false);
+  const [tix, setTix] = useState(String(p.entries));
+  useEffect(() => { setTix(String(p.entries)); }, [p.entries]);
+  const tixNum = tix === "" ? null : parseInt(tix, 10);
+  const earned = p.entries - p.bonus;
+  const step = d => setTix(String(Math.max(0, Math.min(999, (tixNum ?? p.entries) + d))));
   return (
     <div className="p">
       <div className="head">
@@ -614,11 +625,21 @@ function PlayerRow({ p, call, open, onToggle }){
         <button className="btn ghost small" onClick={() => { onToggle(); setSure(false); setPin(""); }} aria-expanded={open}>{open ? "Done" : "Manage"}</button>
       </div>
       {open && <div className="tools">
-        <div className="row">
-          <span className="lbl">Bonus entries</span>
-          <button className="btn ghost small" onClick={() => call("coach_set_bonus", { p_player: p.id, p_bonus: p.bonus - 1 })} disabled={p.bonus <= 0} aria-label="Remove a bonus entry">−</button>
-          <b style={{minWidth:20,textAlign:"center"}}>{p.bonus}</b>
-          <button className="btn ghost small" onClick={() => call("coach_set_bonus", { p_player: p.id, p_bonus: p.bonus + 1 })} aria-label="Add a bonus entry">+</button>
+        <div>
+          <div className="row">
+            <span className="lbl">Raffle tickets</span>
+            <button className="btn ghost small" onClick={() => step(-1)} disabled={(tixNum ?? 0) <= 0} aria-label="One less ticket">−</button>
+            <input value={tix} inputMode="numeric" autoComplete="off" aria-label="Raffle tickets" style={{width:64,marginTop:0,textAlign:"center",fontWeight:800}}
+              onChange={e => setTix(e.target.value.replace(/\D/g, "").slice(0, 3))} />
+            <button className="btn ghost small" onClick={() => step(1)} disabled={(tixNum ?? 0) >= 999} aria-label="One more ticket">+</button>
+            {tixNum !== null && tixNum !== p.entries && <>
+              <button className="btn small" onClick={() => call("coach_set_entries", { p_player: p.id, p_total: tixNum }).catch(() => {})}>Save</button>
+              <button className="btn ghost small" onClick={() => setTix(String(p.entries))}>Undo</button>
+            </>}
+          </div>
+          <div className="muted" style={{fontSize:".82rem",marginTop:4}}>
+            {earned} from finished activities{p.bonus > 0 ? `, ${p.bonus} added by a coach` : p.bonus < 0 ? `, ${-p.bonus} taken away by a coach` : ""}. Starting a new raffle round sets this back to 0.
+          </div>
         </div>
         <div className="row">
           <span className="lbl">New PIN</span>
