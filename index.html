@@ -122,7 +122,7 @@
   .plist .tools{display:flex;flex-direction:column;gap:12px;margin-top:12px;padding:12px;background:var(--bg);border-radius:12px}
   .plist .tools .row{gap:10px}
   .plist .tools .lbl{font-weight:800;font-size:.9rem;min-width:110px}
-  .plist .danger{color:var(--alert);border-color:#efc2bc}
+  .plist .danger,.btn.ghost.danger{color:var(--alert);border-color:#efc2bc}
   .pill{background:var(--accent);color:var(--ink);border-radius:999px;padding:2px 10px;font-weight:900;font-size:.85rem}
   .grid{overflow-x:auto}
   table{border-collapse:collapse;width:100%;font-size:.88rem}
@@ -599,7 +599,7 @@ function Coach({ session, onLogout }){
       {tab === "activities" && <ActivitiesTab d={d} call={call} busy={busy} />}
       {tab === "questions" && <QuestionsTab d={d} call={call} />}
       {tab === "raffle" && <RaffleTab d={d} setD={setD} run={run} t={t} call={call} busy={busy} />}
-      {tab === "settings" && <SettingsTab run={run} t={t} />}
+      {tab === "settings" && <SettingsTab run={run} t={t} d={d} call={call} />}
     </Shell>
   );
 }
@@ -857,7 +857,7 @@ function RaffleTab({ d, setD, run, t, call, busy }){
   );
 }
 
-function SettingsTab({ run, t }){
+function SettingsTab({ run, t, d, call }){
   const [p1, setP1] = useState(""); const [p2, setP2] = useState(""); const [msg, setMsg] = useState("");
   async function save(e){
     e.preventDefault(); setMsg("");
@@ -865,6 +865,7 @@ function SettingsTab({ run, t }){
     try { await run(rpc("coach_change_pass", { p_token: t, p_new: p1 })); setMsg("Passphrase changed. Other coach logins were signed out."); setP1(""); setP2(""); } catch {}
   }
   return (
+    <>
     <form className="card" onSubmit={save}>
       <h3>Change coach passphrase</h3>
       <p className="muted">Share this with your other coaches. At least 8 characters.</p>
@@ -874,6 +875,53 @@ function SettingsTab({ run, t }){
       <button className="btn" style={{marginTop:12}}>Save</button>
       {msg && <p style={{fontWeight:800}}>{msg}</p>}
     </form>
+    <ResetData d={d} call={call} />
+    </>
+  );
+}
+
+/* Coach "Reset data" options. Each one asks again before it runs; nothing here can be undone. */
+function ResetData({ d, call }){
+  const tickets = d.players.reduce((n, p) => n + p.entries, 0);
+  const done = d.progress.filter(r => r.completed_at).length;
+  const plural = (n, one, many) => `${n} ${n === 1 ? one : many}`;
+  const rows = [
+    ["questions", "Questions and equipment requests", "Deletes every question and equipment request players have sent, and your replies.", d.questions.length, plural(d.questions.length, "message", "messages")],
+    ["draws", "Past raffle draws", "Deletes the list of past winners and prizes on the Raffle tab.", d.draws.length, plural(d.draws.length, "draw", "draws")],
+    ["tickets", "Raffle tickets", "Sets every player back to 0 tickets and clears bonus tickets. Finished activities stay finished. (Same as Start new round on the Raffle tab.)", tickets, plural(tickets, "ticket", "tickets")],
+    ["progress", "Activity progress", "Clears every player's checkmarks and finished activities, so everyone starts fresh. This also takes away the tickets those activities earned.", d.progress.length, plural(done, "finished activity", "finished activities")],
+  ];
+  return (
+    <div className="card">
+      <h3>Reset data</h3>
+      <div className="err" style={{marginTop:0}}>⚠️ Resetting permanently deletes data. Once it is gone, it cannot be restored. Players, PINs and activities are never touched.</div>
+      {rows.map(([what, title, detail, count, summary]) => <ResetRow key={what} what={what} title={title} detail={detail} count={count} summary={summary} call={call} />)}
+    </div>
+  );
+}
+
+function ResetRow({ what, title, detail, count, summary, call }){
+  const [sure, setSure] = useState(false); const [busy, setBusy] = useState(false); const [msg, setMsg] = useState("");
+  async function go(){
+    setBusy(true);
+    try { await call("coach_reset", { p_what: what }); setMsg("Done. " + title + " reset."); setSure(false); } catch {} finally { setBusy(false); }
+  }
+  return (
+    <div className="qa">
+      <div className="row">
+        <div className="grow" style={{minWidth:180}}><b>{title}</b> <span className="muted" style={{fontSize:".85rem"}}>({summary})</span>
+          <div className="muted" style={{fontSize:".88rem"}}>{detail}</div></div>
+        {!sure && <button className="btn ghost small danger" disabled={!count} onClick={() => { setSure(true); setMsg(""); }}>{count ? "Reset" : "Nothing to reset"}</button>}
+      </div>
+      {sure && <div className="err">
+        Reset {title.toLowerCase()} for everyone? This cannot be undone.
+        <div className="row" style={{marginTop:8}}>
+        <button className="btn small" style={{background:"var(--alert)"}} disabled={busy} onClick={go}>{busy ? "Resetting..." : "Yes, reset"}</button>
+        <button className="btn ghost small" disabled={busy} onClick={() => setSure(false)}>Cancel</button>
+        </div>
+      </div>}
+      {msg && <p style={{fontWeight:800,color:"var(--ok)",margin:"6px 0 0"}}>{msg}</p>}
+    </div>
   );
 }
 
