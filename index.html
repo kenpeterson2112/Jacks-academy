@@ -83,8 +83,12 @@
   .gear summary::-webkit-details-marker{display:none}
   .gear summary::after{content:"+";margin-left:auto;width:28px;height:28px;border-radius:50%;background:var(--soft);color:var(--brand);display:grid;place-items:center;font-size:1.2rem;font-weight:900}
   .gear[open] summary::after{content:"\2212"}
-  .gear ul{position:absolute;top:calc(100% + 6px);left:0;right:0;z-index:4;margin:0;padding:12px 16px 12px 36px;background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:0 10px 28px rgba(15,26,19,.18)}
+  .gear .pop{position:absolute;top:calc(100% + 6px);left:0;right:0;z-index:4;padding:12px 16px 14px;background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:0 10px 28px rgba(15,26,19,.18)}
+  .gear ul{margin:0;padding-left:20px}
   .gear li{margin:4px 0}
+  .gear .reqbtn{display:block;margin:12px auto 0}
+  .gear textarea{min-height:70px;margin-top:10px}
+  .gear .sent{text-align:center;font-weight:800;color:var(--ok);margin:12px 0 0}
   .fold{margin-top:24px}
   .fold > summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:8px;padding:12px 16px;background:var(--card);border:1px solid var(--line);border-radius:16px;font-weight:900;font-size:1.05rem}
   .fold > summary::-webkit-details-marker{display:none}
@@ -101,6 +105,11 @@
   .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--dark);color:#fff;padding:14px 20px;border-radius:999px;font-weight:900;box-shadow:0 6px 24px rgba(0,0,0,.25);z-index:20;animation:pop .35s ease}
   @keyframes pop{from{transform:translate(-50%,30px);opacity:0}to{transform:translate(-50%,0);opacity:1}}
   .qa{border-top:1px solid var(--line);padding:10px 0}
+  .qname{font-weight:900;font-size:1.15rem;color:var(--dark)}
+  .qmeta{font-size:.85rem;margin-top:2px}
+  .kindtag{display:inline-block;font-size:.72rem;font-weight:900;letter-spacing:.06em;text-transform:uppercase;padding:2px 9px;border-radius:999px;background:#fdf2bf;color:#6b5600;margin-left:8px;vertical-align:middle}
+  .hidebox{display:flex;align-items:center;gap:6px;margin:0;font-size:.88rem;font-weight:800;cursor:pointer;white-space:nowrap}
+  .hidebox input{width:20px;height:20px;accent-color:var(--dark)}
   .qa .reply{background:var(--soft);border-radius:10px;padding:8px 10px;margin-top:6px}
   .tabs{display:flex;gap:6px;overflow-x:auto;padding:12px 0 4px;position:sticky;top:56px;background:var(--bg);z-index:4}
   .tab{border:2px solid var(--line);background:var(--card);border-radius:999px;padding:8px 14px;font-weight:800;cursor:pointer;white-space:nowrap}
@@ -198,6 +207,8 @@ function Chip({ name }){
   if (!name) return null;
   return <span className={"chip " + name.toLowerCase().replace(/[^a-z]/g, "")}>{name}</span>;
 }
+
+const qIcon = q => q.kind === "request" ? "🧰" : "❓";
 
 function stepsFor(a){
   const s = [];
@@ -326,6 +337,7 @@ function Player({ session, onLogout }){
     setStep: (id, step, val) => guard(rpc("player_set_step", { p_token: session.token, p_activity: id, p_step: step, p_value: val })).then(setHome).catch(() => {}),
     quiz: async (id, answers) => { const r = await guard(rpc("player_submit_quiz", { p_token: session.token, p_activity: id, p_answers: answers })); setHome(r.home); return r; },
     ask: (id, body) => guard(rpc("player_ask", { p_token: session.token, p_activity: id, p_body: body })).then(setHome),
+    request: (id, body) => guard(rpc("player_request_equipment", { p_token: session.token, p_activity: id, p_body: body })).then(setHome),
   };
 
   if (!home) return <Shell title="Loading..." onLogout={onLogout}>{err && <div className="err">{err}</div>}</Shell>;
@@ -384,7 +396,7 @@ function PlayerHome({ home, onOpen }){
       {answered.length > 0 && <>
         <h2 style={{marginTop:24}}>Coach answered you</h2>
         <div className="card">{answered.map(q => (
-          <div className="qa" key={q.id}><div>❓ {q.body}</div><div className="reply">🧢 {q.reply}</div></div>
+          <div className="qa" key={q.id}><div>{qIcon(q)} {q.body}</div><div className="reply">🧢 {q.reply}</div></div>
         ))}</div>
       </>}
     </>
@@ -400,7 +412,7 @@ function ActivityView({ a, questions, api, onBack, next, onNext }){
       <div style={{marginTop:16}}><Chip name={a.category} /></div>
       <h2 style={{margin:"2px 0 0"}}>{a.title}</h2>
       <p className="muted" style={{margin:"4px 0 0"}}>{a.summary}</p>
-      <Equipment text={a.drill_steps} />
+      <Equipment a={a} api={api} />
       {complete && <div className="banner" style={{marginTop:14}}>🎉 All done! You earned {a.video_requested ? 2 : 1} raffle {a.video_requested ? "entries" : "entry"}.</div>}
 
       {(a.video_url || a.image_url) && <div className={"card step" + (a.watched ? " ok" : "")}>
@@ -458,9 +470,15 @@ function DrillSteps({ text }){
   );
 }
 
-function Equipment({ text }){
-  const items = equipmentOf(text);
+function Equipment({ a, api }){
+  const items = equipmentOf(a.drill_steps);
   const ref = useRef(null);
+  const [asking, setAsking] = useState(false); const [body, setBody] = useState("");
+  const [busy, setBusy] = useState(false); const [sent, setSent] = useState(false);
+  async function send(){
+    if (!body.trim()) return; setBusy(true);
+    try { await api.request(a.id, body); setBody(""); setAsking(false); setSent(true); setTimeout(() => setSent(false), 4000); } catch {} finally { setBusy(false); }
+  }
   /* The list floats over the page; tapping anywhere else (or Escape) closes it */
   useEffect(() => {
     const close = e => { const d = ref.current; if (d && d.open && (e.key === "Escape" || (e.type === "pointerdown" && !d.contains(e.target)))) d.open = false; };
@@ -471,7 +489,18 @@ function Equipment({ text }){
   return (
     <details className="card gear" ref={ref}>
       <summary>🧰 What you need <span className="muted">({items.length})</span></summary>
-      <ul>{items.map((x, i) => <li key={i}>{x}</li>)}</ul>
+      <div className="pop">
+        <ul>{items.map((x, i) => <li key={i}>{x}</li>)}</ul>
+        {sent && <p className="sent">Sent! Coach will get back to you.</p>}
+        {!asking && !sent && <button className="btn small reqbtn" onClick={() => setAsking(true)}>Request equipment</button>}
+        {asking && <>
+          <textarea autoComplete="off" value={body} onChange={e => setBody(e.target.value.slice(0, 500))} placeholder="What do you need? Coach will see this." autoFocus />
+          <div className="row" style={{justifyContent:"center",marginTop:8}}>
+            <button className="btn small" disabled={busy || !body.trim()} onClick={send}>{busy ? "Sending..." : "Send request"}</button>
+            <button className="btn ghost small" onClick={() => { setAsking(false); setBody(""); }}>Cancel</button>
+          </div>
+        </>}
+      </div>
     </details>
   );
 }
@@ -530,7 +559,7 @@ function AskCoach({ a, questions, api }){
       {sent && <span style={{marginLeft:10,fontWeight:800,color:"var(--ok)"}}>Sent!</span>}
       {questions.map(q => (
         <div className="qa" key={q.id}>
-          <div>❓ {q.body}</div>
+          <div>{qIcon(q)} {q.body}</div>
           {q.reply ? <div className="reply">🧢 {q.reply}</div> : <div className="muted" style={{fontSize:".85rem"}}>Waiting for Coach...</div>}
         </div>
       ))}
@@ -687,9 +716,14 @@ function ActivitiesTab({ d, call, busy }){
       <button className="btn" style={{marginTop:14}} onClick={() => setEdit({ ...blankActivity(), sort_order: d.activities.length + 1 })}>+ New activity</button>
       {d.activities.map(a => (
         <div className="card row" key={a.id}>
-          <div className="grow"><Chip name={a.category} /><div><b>{a.title}</b> {!a.published && <span className="badge">hidden</span>}</div>
+          <div className="grow" style={{minWidth:220}}><Chip name={a.category} /><div><b>{a.title}</b> {!a.published && <span className="badge">hidden</span>}</div>
             <div className="muted" style={{fontSize:".88rem"}}>{a.quiz.length} quiz Qs · {a.video_url ? "video" : a.image_url ? "image/GIF" : "nothing to watch yet"} · {a.video_requested ? "asks for a video (2 🎟️)" : "1 🎟️"}</div></div>
+          <div className="row" style={{gap:14}}>
           <button className="btn ghost small" onClick={() => setEdit({ ...a, category: a.category || "", video_url: a.video_url || "", image_url: a.image_url || "" })}>Edit</button>
+          <label className="hidebox" title="Players won't see this activity while it's hidden">
+            <input type="checkbox" checked={!a.published} disabled={busy} onChange={e => call("coach_save_activity", { p: { ...a, published: !e.target.checked } }).catch(() => {})} />Hide from players
+          </label>
+          </div>
         </div>
       ))}
     </>
@@ -700,13 +734,19 @@ function ActivityEditor({ initial, onSave, onCancel, onDelete, busy, cats }){
   const [a, setA] = useState(JSON.parse(JSON.stringify(initial)));
   const set = (k, v) => setA({ ...a, [k]: v });
   const setQ = (i, q) => { const qs = [...a.quiz]; qs[i] = q; set("quiz", qs); };
+  const [newCat, setNewCat] = useState(!!a.category && !cats.includes(a.category));
   return (
     <div className="card">
       <h3>{a.id ? "Edit activity" : "New activity"}</h3>
       <label>Title<input autoComplete="off" value={a.title} onChange={e => set("title", e.target.value)} /></label>
       <label>Short description<input autoComplete="off" value={a.summary} onChange={e => set("summary", e.target.value)} /></label>
-      <label>Category (the skill it works on)<input autoComplete="off" list="cat-list" value={a.category} onChange={e => set("category", e.target.value)} placeholder="Hitting, Fielding, Pitching..." /></label>
-      <datalist id="cat-list">{cats.map(c => <option key={c} value={c} />)}</datalist>
+      <label>Category (the skill it works on)
+        <select value={newCat ? "__new" : a.category} onChange={e => { const v = e.target.value; setNewCat(v === "__new"); set("category", v === "__new" ? "" : v); }}>
+          <option value="">Choose a category</option>
+          {cats.map(c => <option key={c} value={c}>{c}</option>)}
+          <option value="__new">+ New category...</option>
+        </select></label>
+      {newCat && <input autoComplete="off" value={a.category} onChange={e => set("category", e.target.value)} placeholder="New category name, e.g. Catching" autoFocus />}
       <label>YouTube link (optional)<input autoComplete="off" type="url" value={a.video_url} onChange={e => set("video_url", e.target.value)} placeholder="https://youtube.com/..." /></label>
       <label>Image or GIF link (optional)<input autoComplete="off" value={a.image_url} onChange={e => set("image_url", e.target.value)} placeholder="https://.../drill.gif or media/drill.gif" /></label>
       {a.image_url.trim() && <img className="media" src={a.image_url.trim()} alt="Preview" style={{maxWidth:320}} />}
@@ -749,14 +789,18 @@ function ActivityEditor({ initial, onSave, onCancel, onDelete, busy, cats }){
 
 function QuestionsTab({ d, call }){
   const title = id => (d.activities.find(a => a.id === id) || {}).title || "General";
-  if (!d.questions.length) return <p className="muted" style={{marginTop:20}}>No questions yet.</p>;
+  if (!d.questions.length) return <p className="muted" style={{marginTop:20}}>No questions or equipment requests yet.</p>;
   const open = d.questions.filter(q => !q.reply), answered = d.questions.filter(q => q.reply);
+  const requests = open.filter(q => q.kind === "request"), questions = open.filter(q => q.kind !== "request");
   return (
     <>
-      {open.length === 0 && <p className="muted" style={{marginTop:20}}>No new questions. You're all caught up!</p>}
-      {open.map(q => <QuestionCard key={q.id} q={q} title={title(q.activity_id)} call={call} />)}
+      {open.length === 0 && <p className="muted" style={{marginTop:20}}>Nothing new. You're all caught up!</p>}
+      {requests.length > 0 && <h2 style={{marginTop:20}}>🧰 Equipment requests</h2>}
+      {requests.map(q => <QuestionCard key={q.id} q={q} title={title(q.activity_id)} call={call} />)}
+      {questions.length > 0 && <h2 style={{marginTop:20}}>❓ Questions</h2>}
+      {questions.map(q => <QuestionCard key={q.id} q={q} title={title(q.activity_id)} call={call} />)}
       {answered.length > 0 && <details className="fold">
-        <summary>✅ Answered questions <span className="muted">({answered.length})</span></summary>
+        <summary>✅ Answered <span className="muted">({answered.length})</span></summary>
         {answered.map(q => <QuestionCard key={q.id} q={q} title={title(q.activity_id)} call={call} />)}
       </details>}
     </>
@@ -766,9 +810,10 @@ function QuestionCard({ q, title, call }){
   const [r, setR] = useState(q.reply || "");
   return (
     <div className="card">
-      <div className="muted" style={{fontSize:".85rem"}}>{q.player} · {title} · {new Date(q.created_at).toLocaleDateString()}</div>
-      <p style={{fontWeight:800,margin:"6px 0"}}>❓ {q.body}</p>
-      <textarea autoComplete="off" value={r} onChange={e => setR(e.target.value)} placeholder="Your reply" style={{minHeight:60}} />
+      <div className="qname">{q.player}{q.kind === "request" && <span className="kindtag">Equipment request</span>}</div>
+      <div className="muted qmeta">{title} · {new Date(q.created_at).toLocaleDateString()}</div>
+      <p style={{fontWeight:800,margin:"8px 0 6px"}}>{qIcon(q)} {q.body}</p>
+      <textarea autoComplete="off" value={r} onChange={e => setR(e.target.value)} placeholder={q.kind === "request" ? "Your reply, e.g. I'll bring one to practice" : "Your reply"} style={{minHeight:60}} />
       <button className="btn small" style={{marginTop:6}} onClick={() => call("coach_reply", { p_question: q.id, p_reply: r })}>{q.reply ? "Update reply" : "Reply"}</button>
     </div>
   );
