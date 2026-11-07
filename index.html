@@ -95,6 +95,7 @@
   .fold > summary::-webkit-details-marker{display:none}
   .fold > summary::after{content:"+";margin-left:auto;width:30px;height:30px;border-radius:50%;background:var(--soft);color:var(--brand);display:grid;place-items:center;font-size:1.3rem;font-weight:900}
   .fold[open] > summary::after{content:"\2212"}
+  .part{font-weight:900;font-size:.82rem;letter-spacing:.08em;text-transform:uppercase;color:var(--brand);margin:14px 0 -2px}
   .tip b{display:block;font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;color:var(--brand)}
   .opt{display:block;width:100%;text-align:left;padding:12px 14px;border:2px solid var(--line);border-radius:12px;background:var(--card);margin:6px 0;cursor:pointer;font-weight:600}
   .opt.sel{border-color:var(--dark-2);background:var(--soft)}
@@ -456,11 +457,21 @@ function ActivityView({ a, questions, api, onBack, next, onNext }){
 }
 
 /* Drill step lines: "Equipment:" lines list what you need, "Setup:" and "Look for:" lines show as tips,
-   every other line is a numbered step */
-const LABEL = /^(equipment|setup|look for):\s*/i;
+   "Part:" lines start a new section (a subheading, with numbering starting over), every other line is a numbered step */
+const LABEL = /^(equipment|setup|look for|part):\s*/i;
 const labelOf = s => (s.match(LABEL) || [])[1];
 const drillLines = text => (text || "").split("\n").map(s => s.trim()).filter(Boolean);
 const equipmentOf = text => drillLines(text).filter(s => /^equipment$/i.test(labelOf(s) || "")).map(s => s.replace(LABEL, "")).filter(Boolean);
+
+const parts = lines => {
+  const out = [{ title: "", steps: [] }];
+  lines.forEach(s => {
+    const l = (labelOf(s) || "").toLowerCase();
+    if (l === "part") out.push({ title: s.replace(LABEL, ""), steps: [] });
+    else if (!l) out[out.length - 1].steps.push(s);
+  });
+  return out.filter(g => g.title || g.steps.length);
+};
 
 function DrillSteps({ text }){
   const lines = drillLines(text);
@@ -469,7 +480,10 @@ function DrillSteps({ text }){
   return (
     <>
       {tip("setup")}
-      <ol className="drill">{lines.filter(s => !LABEL.test(s)).map((s, i) => <li key={i}>{s}</li>)}</ol>
+      {parts(lines).map((g, i) => <React.Fragment key={i}>
+        {g.title && <div className="part">{g.title}</div>}
+        {g.steps.length > 0 && <ol className="drill">{g.steps.map((s, j) => <li key={j}>{s}</li>)}</ol>}
+      </React.Fragment>)}
       {tip("look for")}
     </>
   );
@@ -772,7 +786,7 @@ function ActivityEditor({ initial, onSave, onCancel, onDelete, busy, cats }){
       <label>Image or GIF link (optional)<input autoComplete="off" value={a.image_url} onChange={e => set("image_url", e.target.value)} placeholder="https://.../drill.gif or media/drill.gif" /></label>
       {a.image_url.trim() && <img className="media" src={a.image_url.trim()} alt="Preview" style={{maxWidth:320}} />}
       <label>Drill steps (one per line)<textarea autoComplete="off" value={a.drill_steps} onChange={e => set("drill_steps", e.target.value)} style={{minHeight:160}} /></label>
-      <p className="muted" style={{fontSize:".8rem",margin:"4px 0 0"}}>Start a line with "Equipment:" for each thing players need (shown at the top), or with "Setup:" or "Look for:" to show it as a tip instead of a numbered step.</p>
+      <p className="muted" style={{fontSize:".8rem",margin:"4px 0 0"}}>Start a line with "Equipment:" for each thing players need (shown at the top), or with "Setup:" or "Look for:" to show it as a tip instead of a numbered step. A line starting with "Part:" (like "Part: Standing") starts a new section with its own numbering.</p>
       <label className="check" style={{fontWeight:800}}><input type="checkbox" checked={a.video_requested} onChange={e => set("video_requested", e.target.checked)} />Ask players to send a video (worth 2 entries)</label>
       {a.video_requested && <label>Video instructions<input autoComplete="off" value={a.video_note} onChange={e => set("video_note", e.target.value)} placeholder="Send Coach a short clip on WhatsApp." /></label>}
 
