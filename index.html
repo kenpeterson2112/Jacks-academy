@@ -112,14 +112,17 @@
   .wl{background:var(--card);border-radius:20px;width:100%;max-width:440px;max-height:calc(100vh - 32px);overflow:auto;padding:18px 18px 16px;box-shadow:0 18px 50px rgba(0,0,0,.35);position:relative}
   .wl .hello{font-family:var(--display);font-size:1.25rem;text-align:center;margin:4px 30px 12px}
   .wl .skip{position:absolute;top:10px;right:12px;background:none;border:0;color:var(--muted);font-weight:800;cursor:pointer;padding:6px}
-  .wpic{background:var(--bg);border-radius:14px;padding:10px 12px;pointer-events:none;user-select:none;height:290px;display:flex;flex-direction:column;justify-content:center;overflow:hidden}
+  .wshow{margin-top:14px;text-align:center}
+  .wshow .tag{display:inline-block;font-size:.7rem;font-weight:900;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);background:var(--soft);border-radius:999px;padding:3px 10px;margin-bottom:8px}
+  .wpic{width:78%;margin:0 auto;border:7px solid var(--dark);border-radius:24px;background:var(--bg);padding:8px 10px;pointer-events:none;user-select:none;height:250px;overflow:hidden;position:relative;text-align:left;zoom:.82;opacity:.78;filter:saturate(.7);box-shadow:0 6px 18px rgba(15,26,19,.18)}
+  .wpic::after{content:"";position:absolute;left:0;right:0;bottom:0;height:46px;background:linear-gradient(rgba(236,223,195,0),var(--bg))}
   .wpic .card{margin:8px 0;padding:12px}
   .wpic .gear .pop{position:static;box-shadow:none;border:0;padding:0 4px 4px}
   .wpic .vid{height:74px;border-radius:10px;background:var(--dark);display:grid;place-items:center;color:#fff;font-size:1.6rem;margin-top:6px}
   .wpic .bar{display:flex;align-items:center;gap:10px;background:var(--dark);color:#fff;border-bottom:4px solid var(--brand);border-radius:12px;padding:12px 14px;font-family:var(--display)}
   .wpic .bar .pill{font-family:Nunito,system-ui,sans-serif;box-shadow:0 0 0 4px rgba(242,207,29,.45)}
-  .wl h3{margin:14px 0 4px;font-size:1.15rem}
-  .wl p.copy{margin:0;line-height:1.45;min-height:7.3em}
+  .wl h3{margin:2px 0 4px;font-size:1.15rem}
+  .wl p.copy{margin:0;line-height:1.45;min-height:5.8em}
   .wl .foot{display:flex;align-items:center;gap:10px;margin-top:16px}
   .dots{flex:1;display:flex;justify-content:center;gap:7px}
   .dots i{width:9px;height:9px;border-radius:50%;background:var(--line)}
@@ -130,6 +133,7 @@
   .qname{font-weight:900;font-size:1.15rem;color:var(--dark)}
   .qmeta{font-size:.85rem;margin-top:2px}
   .kindtag{display:inline-block;font-size:.72rem;font-weight:900;letter-spacing:.06em;text-transform:uppercase;padding:2px 9px;border-radius:999px;background:#fdf2bf;color:#6b5600;margin-left:8px;vertical-align:middle}
+  .grouphead{font-size:1.15rem;margin:22px 0 -4px}
   .hidebox{display:flex;align-items:center;gap:6px;margin:0;font-size:.88rem;font-weight:800;cursor:pointer;white-space:nowrap}
   .hidebox input{width:20px;height:20px;accent-color:var(--dark)}
   .qa .reply{background:var(--soft);border-radius:10px;padding:8px 10px;margin-top:6px}
@@ -443,9 +447,12 @@ function Welcome({ onClose }){
       <div className="wl" role="dialog" aria-modal="true" aria-labelledby="wl-title">
         <button className="skip" onClick={onClose}>{last ? "Close" : "Skip"}</button>
         <div className="hello">Welcome to the Jacks Academy!</div>
-        <div className="wpic" aria-hidden="true">{s.pic()}</div>
         <h3 id="wl-title">{s.title}</h3>
         <p className="copy">{s.text}</p>
+        <div className="wshow" aria-hidden="true">
+          <div className="tag">Example</div>
+          <div className="wpic">{s.pic()}</div>
+        </div>
         <div className="foot">
           <button className="btn ghost small" onClick={() => setI(i - 1)} style={{visibility: i ? "visible" : "hidden"}}>← Back</button>
           <div className="dots" aria-label={`Slide ${i + 1} of ${WELCOME.length}`}>{WELCOME.map((_, j) => <i key={j} className={j === i ? "on" : ""} />)}</div>
@@ -833,13 +840,23 @@ const blankActivity = () => ({ title: "", summary: "", category: "", video_url: 
 function ActivitiesTab({ d, call, busy }){
   const [edit, setEdit] = useState(null);
   const cats = [...new Set(["Hitting", "Fielding", "Pitching", ...d.activities.map(a => a.category).filter(Boolean)])];
+  /* Visible activities grouped by category (Hitting, Fielding, Pitching, then any others), hidden ones in their own group at the bottom */
+  const catRank = a => a.category ? cats.indexOf(a.category) : cats.length;
+  const shown = d.activities.filter(a => a.published);
+  const groups = [
+    ...cats.map(c => ({ key: c, label: c, list: shown.filter(a => a.category === c) })),
+    { key: "none", label: "No category", list: shown.filter(a => !a.category) },
+    { key: "hidden", label: "Hidden from players", list: d.activities.filter(a => !a.published).sort((x, y) => catRank(x) - catRank(y)) },
+  ];
   if (edit) return <ActivityEditor initial={edit} busy={busy} cats={cats} onCancel={() => setEdit(null)}
     onSave={a => call("coach_save_activity", { p: a }).then(() => setEdit(null)).catch(() => {})}
     onDelete={a => { if (confirm(`Delete "${a.title}"? Players lose progress on it.`)) call("coach_delete_activity", { p_activity: a.id }).then(() => setEdit(null)); }} />;
   return (
     <>
       <button className="btn" style={{marginTop:14}} onClick={() => setEdit({ ...blankActivity(), sort_order: d.activities.length + 1 })}>+ New activity</button>
-      {d.activities.map(a => (
+      {groups.map(g => g.list.length > 0 && <React.Fragment key={g.key}>
+        <h2 className="grouphead">{g.label} <span className="muted">({g.list.length})</span></h2>
+        {g.list.map(a => (
         <div className="card row" key={a.id}>
           <div className="grow" style={{minWidth:220}}><Chip name={a.category} /><div><b>{a.title}</b> {!a.published && <span className="badge">hidden</span>}</div>
             <div className="muted" style={{fontSize:".88rem"}}>{a.quiz.length} quiz Qs · {a.video_url ? "video" : a.image_url ? "image/GIF" : "nothing to watch yet"} · {a.video_requested ? "asks for a video (2 🎟️)" : "1 🎟️"}</div></div>
@@ -850,7 +867,8 @@ function ActivitiesTab({ d, call, busy }){
           </label>
           </div>
         </div>
-      ))}
+        ))}
+      </React.Fragment>)}
     </>
   );
 }
