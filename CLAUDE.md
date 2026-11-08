@@ -23,7 +23,7 @@ Started as a UBC MET ETEC 523 "DIY mobile project" exercise. It is a working pro
 - `supabase/2026-11-06-reset-data.sql`: adds `coach_reset(token, what)` for the Settings tab's Reset data options ('questions', 'draws', 'tickets', 'progress'). Already applied; reference only.
 - `supabase/2026-11-06-set-raffle-total.sql`: adds `coach_set_entries` (coach sets a player's raffle total; the coach adjustment in `bonus_entries` can now be negative), the `_earned_entries` helper, and clamps `_entries` at 0. Already applied; reference only.
 - `supabase/2026-11-07-month-1-sheet.sql`: the coaches' "Month 1" sheet, copied word for word at Ken's request (slips included): Hip Rotation #1 renamed #2 and 10 reps, Single Tee 25 swings, Shoulder–Hip Separation #1 renamed and 10 reps, new Fielding Barehand and Fielding With Glove (with videos), both Normal Glove drills hidden. Applied after the app learned `Part:` lines.
-- `media/`: images and GIFs used by activities. Reference them from an activity as `media/<file>`.
+- `media/`: images and GIFs used by activities. Reference them from an activity as `media/<file>`. Also holds the site icons (`favicon-32.png`, `favicon-192.png`, `apple-touch-icon.png`): the Northumberland Jacks "NJ" logo, cut out of the winter development poster Ken shared (replace with an official logo file if one turns up).
 - `archive/outfield-iq/`: the first version of this repo (Outfield IQ, React + Vite). Kept as is and still deployed at `/Jacks-academy/outfield-iq/`. Copy pieces out of it rather than editing it.
 
 ## Backend (Supabase)
