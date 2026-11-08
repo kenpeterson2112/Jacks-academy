@@ -307,7 +307,7 @@ function Login({ onLogin }){
       <p className="muted">Practice at home. Earn raffle entries.</p>
       <form className="card" onSubmit={submit}>
         {mode === "player" ? <>
-          <label>Your name<input name="username" value={name} onChange={e => setName(e.target.value)} autoCapitalize="words" autoCorrect="off" spellCheck={false} autoComplete="username" required /></label>
+          <label>Player name<input name="username" value={name} onChange={e => setName(e.target.value)} autoCapitalize="words" autoCorrect="off" spellCheck={false} autoComplete="username" required /></label>
           <label>Your 4-digit PIN<input className="pin" name="password" type="password" inputMode="numeric" autoComplete="current-password"
             value={pin} onChange={e => setPin(e.target.value.replace(/\D/g, "").slice(0, 4))} required pattern="[0-9]{4}" /></label>
         </> : <>
