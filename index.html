@@ -130,6 +130,7 @@
   .qname{font-weight:900;font-size:1.15rem;color:var(--dark)}
   .qmeta{font-size:.85rem;margin-top:2px}
   .kindtag{display:inline-block;font-size:.72rem;font-weight:900;letter-spacing:.06em;text-transform:uppercase;padding:2px 9px;border-radius:999px;background:#fdf2bf;color:#6b5600;margin-left:8px;vertical-align:middle}
+  .grouphead{font-size:1.15rem;margin:22px 0 -4px}
   .hidebox{display:flex;align-items:center;gap:6px;margin:0;font-size:.88rem;font-weight:800;cursor:pointer;white-space:nowrap}
   .hidebox input{width:20px;height:20px;accent-color:var(--dark)}
   .qa .reply{background:var(--soft);border-radius:10px;padding:8px 10px;margin-top:6px}
@@ -833,13 +834,23 @@ const blankActivity = () => ({ title: "", summary: "", category: "", video_url: 
 function ActivitiesTab({ d, call, busy }){
   const [edit, setEdit] = useState(null);
   const cats = [...new Set(["Hitting", "Fielding", "Pitching", ...d.activities.map(a => a.category).filter(Boolean)])];
+  /* Visible activities grouped by category (Hitting, Fielding, Pitching, then any others), hidden ones in their own group at the bottom */
+  const catRank = a => a.category ? cats.indexOf(a.category) : cats.length;
+  const shown = d.activities.filter(a => a.published);
+  const groups = [
+    ...cats.map(c => ({ key: c, label: c, list: shown.filter(a => a.category === c) })),
+    { key: "none", label: "No category", list: shown.filter(a => !a.category) },
+    { key: "hidden", label: "Hidden from players", list: d.activities.filter(a => !a.published).sort((x, y) => catRank(x) - catRank(y)) },
+  ];
   if (edit) return <ActivityEditor initial={edit} busy={busy} cats={cats} onCancel={() => setEdit(null)}
     onSave={a => call("coach_save_activity", { p: a }).then(() => setEdit(null)).catch(() => {})}
     onDelete={a => { if (confirm(`Delete "${a.title}"? Players lose progress on it.`)) call("coach_delete_activity", { p_activity: a.id }).then(() => setEdit(null)); }} />;
   return (
     <>
       <button className="btn" style={{marginTop:14}} onClick={() => setEdit({ ...blankActivity(), sort_order: d.activities.length + 1 })}>+ New activity</button>
-      {d.activities.map(a => (
+      {groups.map(g => g.list.length > 0 && <React.Fragment key={g.key}>
+        <h2 className="grouphead">{g.label} <span className="muted">({g.list.length})</span></h2>
+        {g.list.map(a => (
         <div className="card row" key={a.id}>
           <div className="grow" style={{minWidth:220}}><Chip name={a.category} /><div><b>{a.title}</b> {!a.published && <span className="badge">hidden</span>}</div>
             <div className="muted" style={{fontSize:".88rem"}}>{a.quiz.length} quiz Qs · {a.video_url ? "video" : a.image_url ? "image/GIF" : "nothing to watch yet"} · {a.video_requested ? "asks for a video (2 🎟️)" : "1 🎟️"}</div></div>
@@ -850,7 +861,8 @@ function ActivitiesTab({ d, call, busy }){
           </label>
           </div>
         </div>
-      ))}
+        ))}
+      </React.Fragment>)}
     </>
   );
 }
