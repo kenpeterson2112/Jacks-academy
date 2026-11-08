@@ -409,9 +409,9 @@ const WELCOME = [
         <label className="check on" style={{marginTop:8}}><input type="checkbox" checked readOnly tabIndex={-1} />I did the drill!</label></div>
     </> },
   { title: "Equipment and questions",
-    text: "Open \"What you need\" to see the equipment for a drill, and ask Coach for anything you're missing. Got a question? Use the box at the bottom of the activity.",
+    text: "Open the \"Equipment List\" to see what you need for a drill, and ask Coach for anything you're missing. Got a question? Use the box at the bottom of the activity.",
     pic: () => <>
-      <div className="card gear"><div style={{fontWeight:800,padding:"2px 4px 6px"}}>🧰 What you need <span className="muted">(3)</span></div>
+      <div className="card gear"><div style={{fontWeight:800,padding:"2px 4px 6px"}}>🧰 Equipment List <span className="muted">(3)</span></div>
         <div className="pop"><ul><li>Glove</li><li>Baseballs</li><li>A partner</li></ul>
           <button className="btn small reqbtn" tabIndex={-1}>Request equipment</button></div></div>
       <div className="card"><b>🧢 Ask Coach a question</b></div>
@@ -597,7 +597,7 @@ function Equipment({ a, api }){
   if (!items.length) return null;
   return (
     <details className="card gear" ref={ref}>
-      <summary>🧰 What you need <span className="muted">({items.length})</span></summary>
+      <summary>🧰 Equipment List <span className="muted">({items.length})</span></summary>
       <div className="pop">
         <ul>{items.map((x, i) => <li key={i}>{x}</li>)}</ul>
         {sent && <p className="sent">Sent! Coach will get back to you.</p>}
